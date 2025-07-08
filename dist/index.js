@@ -1,31 +1,78 @@
-import { Client, GatewayIntentBits } from "discord.js";
+import { Client, GatewayIntentBits, REST, Routes } from "discord.js";
 import { config } from "dotenv";
-config(); // .envの読み込み
+import cron from "node-cron";
+config();
 const client = new Client({
-    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
+    intents: [GatewayIntentBits.Guilds]
 });
-client.once("ready", () => {
+client.once("ready", async () => {
     console.log(`✅ Logged in as ${client.user?.tag}`);
-});
-client.on("messageCreate", async (message) => {
-    if (message.content === "!poll") {
-        if (!message.channel.isTextBased())
-            return;
-        await message.channel.send({
-            content: "どれが好き？",
+    cron.schedule("0  12 * * *", async () => {
+        const channelId = process.env.CHANNEL_ID;
+        if (!channelId)
+            return console.error("❌ CHANNEL_ID が設定されていません");
+        const channel = await client.channels.fetch(channelId);
+        if (!channel?.isTextBased())
+            return console.error("❌ 指定チャンネルがテキストチャンネルではありません");
+        // @ts-expect-error: 'poll' は型定義外だが Discord API で有効
+        await channel.send({
             poll: {
-                question: {
-                    text: "あなたの好きなレイアウトは？",
-                },
+                question: { text: "本日の VALORANT" },
                 answers: [
-                    { text: "カード形式" },
-                    { text: "リスト形式" },
-                    { text: "グリッド形式" },
+                    { text: "〜8時" },
+                    { text: "8〜9" },
+                    { text: "9時" },
+                    { text: "10〜" },
+                    { text: "時間未定" }
                 ],
-                duration: 60 * 2, // 2時間
+                duration: 60 * 0.2,
                 allowMultiselect: false,
-                layoutType: 1, // 任意の整数。例: 1 = カード型, 2 = リスト型など
-            },
+                layoutType: 1
+            }
+        });
+        console.log("✅ JST12:00 定時投票を送信しました");
+    });
+    const commands = [
+        {
+            name: "poll",
+            description: "本日のVALORANTの投票を手動で投稿します",
+            options: []
+        }
+    ];
+    const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN);
+    try {
+        await rest.put(Routes.applicationCommands(process.env.CLIENT_ID), { body: commands });
+        console.log("✅ スラッシュコマンド /poll を登録しました");
+    }
+    catch (error) {
+        console.error("❌ コマンド登録に失敗しました:", error);
+    }
+});
+client.on("interactionCreate", async (interaction) => {
+    if (!interaction.isChatInputCommand())
+        return;
+    if (interaction.commandName !== "poll")
+        return;
+    await interaction.reply({
+        content: "✅ 手動で投票を作成しました！",
+        ephemeral: true
+    });
+    if (interaction.channel?.isTextBased()) {
+        // @ts-expect-error: 'poll' は型未定義だが Discord API で有効
+        await interaction.channel.send({
+            poll: {
+                question: { text: "本日の VALORANT" },
+                answers: [
+                    { text: "〜8時" },
+                    { text: "8〜9" },
+                    { text: "9時" },
+                    { text: "10〜" },
+                    { text: "時間未定" }
+                ],
+                duration: 60 * 2,
+                allowMultiselect: false,
+                layoutType: 1
+            }
         });
     }
 });
