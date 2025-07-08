@@ -2,16 +2,6 @@ import { Client, GatewayIntentBits, REST, Routes } from "discord.js";
 import { config } from "dotenv";
 import cron from "node-cron";
 config();
-
-const PORT = process.env.PORT || 3000;
-
-app.get('/', (_req, res) => {
-  res.send('Bot is running!');
-});
-
-app.listen(PORT, () => {
-  console.log(`Web server listening on port ${PORT}`);
-});
 const client = new Client({
     intents: [GatewayIntentBits.Guilds]
 });
@@ -79,7 +69,7 @@ client.on("interactionCreate", async (interaction) => {
                     { text: "10〜" },
                     { text: "時間未定" }
                 ],
-                duration: 60 * 2,
+                duration: 60 * 0.2,
                 allowMultiselect: false,
                 layoutType: 1
             }
@@ -87,6 +77,3 @@ client.on("interactionCreate", async (interaction) => {
     }
 });
 client.login(process.env.DISCORD_TOKEN);
-client.on('ready', () => {
-  console.log(`✅ ${client.user?.tag} としてログインしました`);
-});

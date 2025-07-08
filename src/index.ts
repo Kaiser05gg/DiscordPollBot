@@ -85,7 +85,7 @@ client.on("interactionCreate", async (interaction: Interaction) => {
           { text: "10〜" },
           { text: "時間未定" }
         ],
-        duration: 60 * 2,
+        duration: 60 * 0.2,
         allowMultiselect: false,
         layoutType: 1
       }
