@@ -94,3 +94,7 @@ client.on("interactionCreate", async (interaction: Interaction) => {
 });
 
 client.login(process.env.DISCORD_TOKEN);
+
+client.on('ready', () => {
+  console.log(`✅ ${client.user?.tag} としてログインしました`);
+});
