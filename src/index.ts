@@ -7,9 +7,20 @@ import {
 } from "discord.js";
 import { config } from "dotenv";
 import cron from "node-cron";
-
+import express from "express";
 config();
 
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.get("/", (_req, res) => {
+  res.send("Express is running!");
+});
+
+app.listen(PORT, () => {
+  console.log(`🚀 Server listening on port ${PORT}`);
+});
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds]
