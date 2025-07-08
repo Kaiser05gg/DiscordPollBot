@@ -2,6 +2,16 @@ import { Client, GatewayIntentBits, REST, Routes } from "discord.js";
 import { config } from "dotenv";
 import cron from "node-cron";
 config();
+
+const PORT = process.env.PORT || 3000;
+
+app.get('/', (_req, res) => {
+  res.send('Bot is running!');
+});
+
+app.listen(PORT, () => {
+  console.log(`Web server listening on port ${PORT}`);
+});
 const client = new Client({
     intents: [GatewayIntentBits.Guilds]
 });
