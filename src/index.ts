@@ -10,6 +10,7 @@ import cron from "node-cron";
 
 config();
 
+
 const client = new Client({
   intents: [GatewayIntentBits.Guilds]
 });
