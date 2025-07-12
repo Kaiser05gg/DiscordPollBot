@@ -44,7 +44,8 @@ client.once("ready", async () => {
           { text: "8〜9" },
           { text: "9時" },
           { text: "10〜" },
-          { text: "時間未定" }
+          { text: "時間未定" },
+          { text: "不参加" }
         ],
         duration: 60 * 0.2,
         allowMultiselect: false,
@@ -94,7 +95,8 @@ client.on("interactionCreate", async (interaction: Interaction) => {
           { text: "8〜9" },
           { text: "9時" },
           { text: "10〜" },
-          { text: "時間未定" }
+          { text: "時間未定" },
+          { text: "不参加" }
         ],
         duration: 60 * 0.2,
         allowMultiselect: false,
