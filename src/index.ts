@@ -43,7 +43,7 @@ client.once("ready", async () => {
           { text: "〜8時" },
           { text: "8〜9" },
           { text: "9時" },
-          { text: "10〜" },
+          { text: "10時半〜" },
           { text: "時間未定" },
           { text: "不参加" }
         ],
@@ -94,7 +94,7 @@ client.on("interactionCreate", async (interaction: Interaction) => {
           { text: "〜8時" },
           { text: "8〜9" },
           { text: "9時" },
-          { text: "10〜" },
+          { text: "10時半〜" },
           { text: "時間未定" },
           { text: "不参加" }
         ],
