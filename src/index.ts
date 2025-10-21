@@ -1,20 +1,23 @@
+/// <reference path="./types/discord.d.ts" />
+
 import {
   Client,
   GatewayIntentBits,
   REST,
   Routes,
-  Interaction
+  Interaction,
 } from "discord.js";
 import { startExpressServer } from "./utils/server";
+import { pool } from "./db/connection.js";
+import { Events } from "discord.js";
 import { config } from "dotenv";
 import cron from "node-cron";
 config();
 
-
 startExpressServer();
 
 const client = new Client({
-  intents: [GatewayIntentBits.Guilds]
+  intents: [GatewayIntentBits.Guilds],
 });
 
 client.once("ready", async () => {
@@ -24,10 +27,13 @@ client.once("ready", async () => {
     if (!channelId) return console.error("❌ CHANNEL_ID が設定されていません");
 
     const channel = await client.channels.fetch(channelId);
-    if (!channel?.isTextBased()) return console.error("❌ 指定チャンネルがテキストチャンネルではありません");
+    if (!channel?.isTextBased())
+      return console.error(
+        "❌ 指定チャンネルがテキストチャンネルではありません"
+      );
 
     // @ts-expect-error: 'poll' は型定義外だが Discord API で有効
-    await channel.send({
+    const message = await channel.send({
       poll: {
         question: { text: "本日の VALORANT" },
         answers: [
@@ -36,31 +42,45 @@ client.once("ready", async () => {
           { text: "9時" },
           { text: "10時半〜" },
           { text: "時間未定" },
-          { text: "不参加" }
+          { text: "不参加" },
         ],
         duration: 60 * 0.2,
         allowMultiselect: false,
-        layoutType: 1
-      }
+        layoutType: 1,
+      },
     });
     console.log("✅ JST12:00 定時投票を送信しました");
+
+    try {
+      const [result] = await pool.query(
+        `INSERT INTO polls (message_id, guild_id, channel_id, question) VALUES (?, ?, ?, ?)`,
+        [
+          message.id,
+          message.guild?.id || null,
+          message.channel.id,
+          "本日の VALORANT",
+        ]
+      );
+      console.log("💾 投票データをDBに保存しました:", result);
+    } catch (err) {
+      console.error("❌ DB保存エラー:", err);
+    }
   });
 
   const commands = [
     {
       name: "poll",
       description: "本日のVALORANTの投票を手動で投稿します",
-      options: []
-    }
+      options: [],
+    },
   ];
 
   const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN!);
 
   try {
-    await rest.put(
-      Routes.applicationCommands(process.env.CLIENT_ID!),
-      { body: commands }
-    );
+    await rest.put(Routes.applicationCommands(process.env.CLIENT_ID!), {
+      body: commands,
+    });
     console.log("✅ スラッシュコマンド /poll を登録しました");
   } catch (error) {
     console.error("❌ コマンド登録に失敗しました:", error);
@@ -73,12 +93,12 @@ client.on("interactionCreate", async (interaction: Interaction) => {
 
   await interaction.reply({
     content: "✅ 手動で投票を作成しました！",
-    ephemeral: true
+    ephemeral: true,
   });
 
   if (interaction.channel?.isTextBased()) {
     // @ts-expect-error: 'poll' は型未定義だが Discord API で有効
-    await interaction.channel.send({
+    const message = await interaction.channel.send({
       poll: {
         question: { text: "本日の VALORANT" },
         answers: [
@@ -87,18 +107,60 @@ client.on("interactionCreate", async (interaction: Interaction) => {
           { text: "9時" },
           { text: "10時半〜" },
           { text: "時間未定" },
-          { text: "不参加" }
+          { text: "不参加" },
         ],
         duration: 60 * 0.2,
         allowMultiselect: false,
-        layoutType: 1
-      }
+        layoutType: 1,
+      },
     });
+    try {
+      await pool.query(
+        `INSERT INTO polls (message_id, guild_id, channel_id, question)
+         VALUES (?, ?, ?, ?)`,
+        [
+          message.id,
+          message.guild?.id || null,
+          message.channel.id,
+          "本日の VALORANT",
+        ]
+      );
+      console.log("💾 手動投票データをDBに保存しました");
+    } catch (err) {
+      console.error("❌ 手動DB保存エラー:", err);
+    }
+  }
+});
+
+client.on(Events.MessagePollVoteAdd, async (vote) => {
+  try {
+    await pool.query(
+      `INSERT INTO poll_votes (message_id, user_id, option_id)
+       VALUES (?, ?, ?)
+       ON DUPLICATE KEY UPDATE
+         option_id = VALUES(option_id),
+         voted_at = CURRENT_TIMESTAMP`,
+      [vote.message.id, vote.user.id, vote.option.id]
+    );
+    console.log(`🗳️ ${vote.user.tag} が ${vote.option.text} に投票しました`);
+  } catch (err) {
+    console.error("❌ 投票保存エラー:", err);
+  }
+});
+
+client.on(Events.MessagePollVoteRemove, async (vote) => {
+  try {
+    await pool.query(
+      `DELETE FROM poll_votes
+       WHERE message_id = ? AND user_id = ?`,
+      [vote.message.id, vote.user.id]
+    );
+    console.log(
+      `↩️ ${vote.user.tag} が ${vote.option.text} の投票を取り消しました`
+    );
+  } catch (err) {
+    console.error("❌ 投票削除エラー:", err);
   }
 });
 
 client.login(process.env.DISCORD_TOKEN);
-
-client.on('ready', () => {
-  console.log(`✅ ${client.user?.tag} としてログインしました`);
-});

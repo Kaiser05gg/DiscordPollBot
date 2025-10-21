@@ -1,7 +1,7 @@
 import "dotenv/config";
-import mysql, { Pool } from "mysql2/promise";
+import mysql, { Pool, PoolOptions } from "mysql2/promise";
 
-export const pool: Pool = mysql.createPool({
+const poolConfig: PoolOptions = {
   host: process.env.DB_HOST,
   port: Number(process.env.DB_PORT || 3306),
   user: process.env.DB_USER,
@@ -13,7 +13,12 @@ export const pool: Pool = mysql.createPool({
   supportBigNumbers: true,
   bigNumberStrings: true,
   dateStrings: true,
-});
+  multipleStatements: false,
+  enableKeepAlive: true,
+  keepAliveInitialDelay: 0,
+};
+
+export const pool: Pool = mysql.createPool(poolConfig);
 
 export const ensureTables = async () => {
   const db = pool;
@@ -43,15 +48,20 @@ export const ensureTables = async () => {
 
   await db.query(`
     CREATE TABLE IF NOT EXISTS poll_votes (
-      message_id BIGINT NOT NULL,
-      user_id    BIGINT NOT NULL,
-      option_id  INT NOT NULL,
-      voted_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      PRIMARY KEY (message_id, user_id),
-      CONSTRAINT fk_votes_poll
-        FOREIGN KEY (message_id) REFERENCES polls(message_id)
-        ON DELETE CASCADE
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  message_id BIGINT NOT NULL,
+  user_id    BIGINT NOT NULL,
+  option_id  INT NOT NULL,
+  voted_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (message_id, user_id),
+  CONSTRAINT fk_votes_poll
+    FOREIGN KEY (message_id) REFERENCES polls(message_id)
+    ON DELETE CASCADE,
+  CONSTRAINT fk_votes_option
+    FOREIGN KEY (message_id, option_id)
+    REFERENCES poll_options(message_id, option_id)
+    ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
   `);
 
   await db.query(

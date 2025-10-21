@@ -2,11 +2,15 @@
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",
-    "moduleResolution": "bundler", // Nodeではなく bundler に
+    "moduleResolution": "bundler",
     "esModuleInterop": true,
-    "moduleDetection": "force", // 明示的にモジュールとして扱う
+    "moduleDetection": "force",
     "outDir": "./dist",
-    "strict": true
+    "strict": true,
+    "typeRoots": [
+      "./src/types",
+      "./node_modules/@types"
+    ]
   },
   "include": [
     "src"

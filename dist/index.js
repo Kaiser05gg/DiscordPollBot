@@ -1,9 +1,12 @@
-import { Client, GatewayIntentBits, REST, Routes } from "discord.js";
+import { Client, GatewayIntentBits, REST, Routes, } from "discord.js";
+import { startExpressServer } from "./utils/server";
+import { pool } from "./db/connection.js";
 import { config } from "dotenv";
 import cron from "node-cron";
 config();
+startExpressServer();
 const client = new Client({
-    intents: [GatewayIntentBits.Guilds]
+    intents: [GatewayIntentBits.Guilds],
 });
 client.once("ready", async () => {
     console.log(`✅ Logged in as ${client.user?.tag}`);
@@ -15,33 +18,48 @@ client.once("ready", async () => {
         if (!channel?.isTextBased())
             return console.error("❌ 指定チャンネルがテキストチャンネルではありません");
         // @ts-expect-error: 'poll' は型定義外だが Discord API で有効
-        await channel.send({
+        const message = await channel.send({
             poll: {
                 question: { text: "本日の VALORANT" },
                 answers: [
                     { text: "〜8時" },
                     { text: "8〜9" },
                     { text: "9時" },
-                    { text: "10〜" },
-                    { text: "時間未定" }
+                    { text: "10時半〜" },
+                    { text: "時間未定" },
+                    { text: "不参加" },
                 ],
                 duration: 60 * 0.2,
                 allowMultiselect: false,
-                layoutType: 1
-            }
+                layoutType: 1,
+            },
         });
         console.log("✅ JST12:00 定時投票を送信しました");
     });
+    try {
+        const [result] = await pool.query(`INSERT INTO polls (message_id, guild_id, channel_id, question) VALUES (?, ?, ?, ?)`, [
+            message.id,
+            message.guild?.id || null,
+            message.channel.id,
+            "本日の VALORANT",
+        ]);
+        console.log("💾 投票データをDBに保存しました:", result);
+    }
+    catch (err) {
+        console.error("❌ DB保存エラー:", err);
+    }
     const commands = [
         {
             name: "poll",
             description: "本日のVALORANTの投票を手動で投稿します",
-            options: []
-        }
+            options: [],
+        },
     ];
     const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN);
     try {
-        await rest.put(Routes.applicationCommands(process.env.CLIENT_ID), { body: commands });
+        await rest.put(Routes.applicationCommands(process.env.CLIENT_ID), {
+            body: commands,
+        });
         console.log("✅ スラッシュコマンド /poll を登録しました");
     }
     catch (error) {
@@ -55,7 +73,7 @@ client.on("interactionCreate", async (interaction) => {
         return;
     await interaction.reply({
         content: "✅ 手動で投票を作成しました！",
-        ephemeral: true
+        ephemeral: true,
     });
     if (interaction.channel?.isTextBased()) {
         // @ts-expect-error: 'poll' は型未定義だが Discord API で有効
@@ -66,17 +84,18 @@ client.on("interactionCreate", async (interaction) => {
                     { text: "〜8時" },
                     { text: "8〜9" },
                     { text: "9時" },
-                    { text: "10〜" },
-                    { text: "時間未定" }
+                    { text: "10時半〜" },
+                    { text: "時間未定" },
+                    { text: "不参加" },
                 ],
                 duration: 60 * 0.2,
                 allowMultiselect: false,
-                layoutType: 1
-            }
+                layoutType: 1,
+            },
         });
     }
 });
 client.login(process.env.DISCORD_TOKEN);
-client.on('ready', () => {
+client.on("ready", () => {
     console.log(`✅ ${client.user?.tag} としてログインしました`);
 });
