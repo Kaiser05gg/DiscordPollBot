@@ -6,10 +6,11 @@ import {
   REST,
   Routes,
   Interaction,
+  VoiceState,
 } from "discord.js";
 import { startExpressServer } from "./utils/server";
 import { pool } from "./db/connection.js";
-import { Events } from "discord.js";
+import { Events, MessagePollVoteAdd, MessagePollVoteRemove } from "discord.js";
 import { config } from "dotenv";
 import cron from "node-cron";
 config();
@@ -131,8 +132,8 @@ client.on("interactionCreate", async (interaction: Interaction) => {
     }
   }
 });
-
-client.on(Events.MessagePollVoteAdd, async (vote) => {
+//(vote: anyの型安全は後回しにします)
+client.on(Events.MessagePollVoteAdd, async (vote: any) => {
   try {
     await pool.query(
       `INSERT INTO poll_votes (message_id, user_id, option_id)
@@ -147,8 +148,8 @@ client.on(Events.MessagePollVoteAdd, async (vote) => {
     console.error("❌ 投票保存エラー:", err);
   }
 });
-
-client.on(Events.MessagePollVoteRemove, async (vote) => {
+//(vote: anyの型安全は後回しにします)
+client.on(Events.MessagePollVoteRemove, async (vote: any) => {
   try {
     await pool.query(
       `DELETE FROM poll_votes

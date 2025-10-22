@@ -1,4 +1,5 @@
 import "discord.js";
+import { Message, User, PollAnswer } from "discord.js";
 
 declare module "discord.js" {
   interface MessagePollVoteAdd {
