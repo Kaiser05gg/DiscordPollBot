@@ -1,4 +1,4 @@
-# DiscordBot2
+# DiscordPollBot
 
 ## discordbot 制作第２弾
 
