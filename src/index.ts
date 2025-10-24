@@ -9,8 +9,8 @@ import {
   VoiceState,
 } from "discord.js";
 import { startExpressServer } from "./utils/server";
-import { pool } from "./db/connection.js";
-import { Events, MessagePollVoteAdd, MessagePollVoteRemove } from "discord.js";
+import { pool } from "./infrastructure/mysql/connection.js";
+import { Events, MessagePollVoteAdd, MessagePollVoteRemove } from "discord.js"; //client.on(Events.MessagePollVoteAdd, async (vote: any)の関数。現在後回しにしている。
 import { config } from "dotenv";
 import cron from "node-cron";
 config();
