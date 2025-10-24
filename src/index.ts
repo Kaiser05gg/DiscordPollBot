@@ -9,7 +9,8 @@ import {
   VoiceState,
 } from "discord.js";
 import { startExpressServer } from "./intetfaces/http/server.js";
-import { pool } from "./infrastructure/mysql/connection.js";
+import { ensureTables } from "./infrastructure/mysql/schema.js";
+import { getPool, pool } from "./infrastructure/mysql/connection.js";
 import { Events, MessagePollVoteAdd, MessagePollVoteRemove } from "discord.js"; //client.on(Events.MessagePollVoteAdd, async (vote: any)の関数。現在後回しにしている。
 import { config } from "dotenv";
 import cron from "node-cron";
@@ -23,6 +24,8 @@ const client = new Client({
 
 client.once("ready", async () => {
   console.log(`✅ Logged in as ${client.user?.tag}`);
+  await ensureTables();
+  const db = await getPool();
   cron.schedule("0  12 * * *", async () => {
     const channelId = process.env.CHANNEL_ID;
     if (!channelId) return console.error("❌ CHANNEL_ID が設定されていません");
@@ -53,7 +56,7 @@ client.once("ready", async () => {
     console.log("✅ JST12:00 定時投票を送信しました");
 
     try {
-      const [result] = await pool.query(
+      const [result] = await db.query(
         `INSERT INTO polls (message_id, guild_id, channel_id, question) VALUES (?, ?, ?, ?)`,
         [
           message.id,
@@ -91,6 +94,7 @@ client.once("ready", async () => {
 client.on("interactionCreate", async (interaction: Interaction) => {
   if (!interaction.isChatInputCommand()) return;
   if (interaction.commandName !== "poll") return;
+  const db = await getPool();
 
   await interaction.reply({
     content: "✅ 手動で投票を作成しました！",
@@ -116,7 +120,7 @@ client.on("interactionCreate", async (interaction: Interaction) => {
       },
     });
     try {
-      await pool.query(
+      await db.query(
         `INSERT INTO polls (message_id, guild_id, channel_id, question)
          VALUES (?, ?, ?, ?)`,
         [
@@ -134,8 +138,9 @@ client.on("interactionCreate", async (interaction: Interaction) => {
 });
 //(vote: anyの型安全は後回しにします)
 client.on(Events.MessagePollVoteAdd, async (vote: any) => {
+  const db = await getPool();
   try {
-    await pool.query(
+    await db.query(
       `INSERT INTO poll_votes (message_id, user_id, option_id)
        VALUES (?, ?, ?)
        ON DUPLICATE KEY UPDATE
@@ -150,8 +155,9 @@ client.on(Events.MessagePollVoteAdd, async (vote: any) => {
 });
 //(vote: anyの型安全は後回しにします)
 client.on(Events.MessagePollVoteRemove, async (vote: any) => {
+  const db = await getPool();
   try {
-    await pool.query(
+    await db.query(
       `DELETE FROM poll_votes
        WHERE message_id = ? AND user_id = ?`,
       [vote.message.id, vote.user.id]
