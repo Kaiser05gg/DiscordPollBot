@@ -1,4 +1,3 @@
-// src/infrastructure/mysql/connection.ts
 import mysql, { Pool } from "mysql2/promise";
 
 export let pool: Pool | null = null;
