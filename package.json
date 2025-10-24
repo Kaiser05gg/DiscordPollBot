@@ -1,5 +1,5 @@
 {
-  "name": "discordbot",
+  "name": "discordpollbot",
   "version": "1.0.0",
   "description": "discordbotで投票システムを作ります",
   "main": "dist/index.js",

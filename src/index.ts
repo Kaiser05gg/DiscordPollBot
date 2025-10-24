@@ -8,7 +8,7 @@ import {
   Interaction,
   VoiceState,
 } from "discord.js";
-import { startExpressServer } from "./utils/server";
+import { startExpressServer } from "./intetfaces/http/server.js";
 import { pool } from "./infrastructure/mysql/connection.js";
 import { Events, MessagePollVoteAdd, MessagePollVoteRemove } from "discord.js"; //client.on(Events.MessagePollVoteAdd, async (vote: any)の関数。現在後回しにしている。
 import { config } from "dotenv";
