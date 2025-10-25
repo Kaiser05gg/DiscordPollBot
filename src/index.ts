@@ -8,9 +8,9 @@ import {
   Interaction,
   VoiceState,
 } from "discord.js";
-import { startExpressServer } from "./intetfaces/http/server.js";
+import { createPoll } from "./application/usecases/createPoll.js";
+import { startExpressServer } from "./interfaces/http/server.js";
 import { ensureTables } from "./infrastructure/mysql/schema.js";
-import { getPool } from "./infrastructure/mysql/connection.js";
 import { pollRepository } from "./infrastructure/mysql/pollRepository.js";
 import { Events, MessagePollVoteAdd, MessagePollVoteRemove } from "discord.js"; //client.on(Events.MessagePollVoteAdd, async (vote: any)の関数。現在後回しにしている。
 import { config } from "dotenv";
@@ -30,40 +30,11 @@ client.once("ready", async () => {
     const channelId = process.env.CHANNEL_ID;
     if (!channelId) return console.error("❌ CHANNEL_ID が設定されていません");
 
-    const channel = await client.channels.fetch(channelId);
-    if (!channel?.isTextBased())
-      return console.error(
-        "❌ 指定チャンネルがテキストチャンネルではありません"
-      );
-
-    // @ts-expect-error: 'poll' は型定義外だが Discord API で有効
-    const message = await channel.send({
-      poll: {
-        question: { text: "本日の VALORANT" },
-        answers: [
-          { text: "〜8時" },
-          { text: "8〜9" },
-          { text: "9時" },
-          { text: "10時半〜" },
-          { text: "時間未定" },
-          { text: "不参加" },
-        ],
-        duration: 60 * 0.2,
-        allowMultiselect: false,
-        layoutType: 1,
-      },
-    });
-    console.log("✅ JST12:00 定時投票を送信しました");
-
     try {
-      await pollRepository.savePoll({
-        messageId: message.id,
-        guildId: message.guild?.id || null,
-        channelId: message.channel.id,
-        question: "本日の VALORANT",
-      });
+      await createPoll(client, channelId); // ✅ 自動投票もcreatePollを使用
+      console.log("✅ JST12:00 定時投票を送信しました");
     } catch (err) {
-      console.error("❌ DB保存エラー:", err);
+      console.error("❌ 自動投票エラー:", err);
     }
   });
 
@@ -96,33 +67,12 @@ client.on("interactionCreate", async (interaction: Interaction) => {
     ephemeral: true,
   });
 
-  if (interaction.channel?.isTextBased()) {
-    // @ts-expect-error: 'poll' は型未定義だが Discord API で有効
-    const message = await interaction.channel.send({
-      poll: {
-        question: { text: "本日の VALORANT" },
-        answers: [
-          { text: "〜8時" },
-          { text: "8〜9" },
-          { text: "9時" },
-          { text: "10時半〜" },
-          { text: "時間未定" },
-          { text: "不参加" },
-        ],
-        duration: 60 * 0.2,
-        allowMultiselect: false,
-        layoutType: 1,
-      },
-    });
+  if (interaction.channelId) {
     try {
-      await pollRepository.savePoll({
-        messageId: message.id,
-        guildId: message.guild?.id || null,
-        channelId: message.channel.id,
-        question: "本日の VALORANT",
-      });
+      await createPoll(client, interaction.channelId); // ✅ createPollで送信＋DB保存を共通化
+      console.log("✅ 手動投票を作成しました");
     } catch (err) {
-      console.error("❌ 手動DB保存エラー:", err);
+      console.error("❌ 手動投票エラー:", err);
     }
   }
 });
