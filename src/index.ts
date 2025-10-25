@@ -26,7 +26,6 @@ const client = new Client({
 client.once("ready", async () => {
   console.log(`✅ Logged in as ${client.user?.tag}`);
   await ensureTables();
-  const db = await getPool();
   cron.schedule("0  12 * * *", async () => {
     const channelId = process.env.CHANNEL_ID;
     if (!channelId) return console.error("❌ CHANNEL_ID が設定されていません");
@@ -91,7 +90,6 @@ client.once("ready", async () => {
 client.on("interactionCreate", async (interaction: Interaction) => {
   if (!interaction.isChatInputCommand()) return;
   if (interaction.commandName !== "poll") return;
-  const db = await getPool();
 
   await interaction.reply({
     content: "✅ 手動で投票を作成しました！",
@@ -130,7 +128,6 @@ client.on("interactionCreate", async (interaction: Interaction) => {
 });
 //(vote: anyの型安全は後回しにします)
 client.on(Events.MessagePollVoteAdd, async (vote: any) => {
-  const db = await getPool();
   try {
     await pollRepository.saveVote({
       messageId: vote.message.id,
@@ -144,7 +141,6 @@ client.on(Events.MessagePollVoteAdd, async (vote: any) => {
 });
 //(vote: anyの型安全は後回しにします)
 client.on(Events.MessagePollVoteRemove, async (vote: any) => {
-  const db = await getPool();
   try {
     await pollRepository.removeVote({
       messageId: vote.message.id,
