@@ -1,6 +1,5 @@
 import { getPool } from "./connection";
 
-//Poll関連データを操作するリポジトリ層（DBアクセス専用）
 export const pollRepository = {
   //投票の作成をDBに保存
   async savePoll(poll: {
