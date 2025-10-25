@@ -10,7 +10,8 @@ import {
 } from "discord.js";
 import { startExpressServer } from "./intetfaces/http/server.js";
 import { ensureTables } from "./infrastructure/mysql/schema.js";
-import { getPool, pool } from "./infrastructure/mysql/connection.js";
+import { getPool } from "./infrastructure/mysql/connection.js";
+import { pollRepository } from "./infrastructure/mysql/pollRepository.js";
 import { Events, MessagePollVoteAdd, MessagePollVoteRemove } from "discord.js"; //client.on(Events.MessagePollVoteAdd, async (vote: any)の関数。現在後回しにしている。
 import { config } from "dotenv";
 import cron from "node-cron";
@@ -56,16 +57,12 @@ client.once("ready", async () => {
     console.log("✅ JST12:00 定時投票を送信しました");
 
     try {
-      const [result] = await db.query(
-        `INSERT INTO polls (message_id, guild_id, channel_id, question) VALUES (?, ?, ?, ?)`,
-        [
-          message.id,
-          message.guild?.id || null,
-          message.channel.id,
-          "本日の VALORANT",
-        ]
-      );
-      console.log("💾 投票データをDBに保存しました:", result);
+      await pollRepository.savePoll({
+        messageId: message.id,
+        guildId: message.guild?.id || null,
+        channelId: message.channel.id,
+        question: "本日の VALORANT",
+      });
     } catch (err) {
       console.error("❌ DB保存エラー:", err);
     }
@@ -120,17 +117,12 @@ client.on("interactionCreate", async (interaction: Interaction) => {
       },
     });
     try {
-      await db.query(
-        `INSERT INTO polls (message_id, guild_id, channel_id, question)
-         VALUES (?, ?, ?, ?)`,
-        [
-          message.id,
-          message.guild?.id || null,
-          message.channel.id,
-          "本日の VALORANT",
-        ]
-      );
-      console.log("💾 手動投票データをDBに保存しました");
+      await pollRepository.savePoll({
+        messageId: message.id,
+        guildId: message.guild?.id || null,
+        channelId: message.channel.id,
+        question: "本日の VALORANT",
+      });
     } catch (err) {
       console.error("❌ 手動DB保存エラー:", err);
     }
@@ -140,14 +132,11 @@ client.on("interactionCreate", async (interaction: Interaction) => {
 client.on(Events.MessagePollVoteAdd, async (vote: any) => {
   const db = await getPool();
   try {
-    await db.query(
-      `INSERT INTO poll_votes (message_id, user_id, option_id)
-       VALUES (?, ?, ?)
-       ON DUPLICATE KEY UPDATE
-         option_id = VALUES(option_id),
-         voted_at = CURRENT_TIMESTAMP`,
-      [vote.message.id, vote.user.id, vote.option.id]
-    );
+    await pollRepository.saveVote({
+      messageId: vote.message.id,
+      userId: vote.user.id,
+      optionId: vote.option.id,
+    });
     console.log(`🗳️ ${vote.user.tag} が ${vote.option.text} に投票しました`);
   } catch (err) {
     console.error("❌ 投票保存エラー:", err);
@@ -157,11 +146,10 @@ client.on(Events.MessagePollVoteAdd, async (vote: any) => {
 client.on(Events.MessagePollVoteRemove, async (vote: any) => {
   const db = await getPool();
   try {
-    await db.query(
-      `DELETE FROM poll_votes
-       WHERE message_id = ? AND user_id = ?`,
-      [vote.message.id, vote.user.id]
-    );
+    await pollRepository.removeVote({
+      messageId: vote.message.id,
+      userId: vote.user.id,
+    });
     console.log(
       `↩️ ${vote.user.tag} が ${vote.option.text} の投票を取り消しました`
     );
