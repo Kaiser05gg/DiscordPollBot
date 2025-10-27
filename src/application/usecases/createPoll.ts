@@ -6,7 +6,6 @@ export const createPoll = async (client: Client, channelId: string) => {
   if (!channel?.isTextBased())
     throw new Error("❌ 指定チャンネルがテキストチャンネルではありません");
 
-  // @ts-expect-error: 'poll' はdiscord.jsの型に未定義だがAPI上は有効
   const message = await channel.send({
     poll: {
       question: { text: "本日の VALORANT" },

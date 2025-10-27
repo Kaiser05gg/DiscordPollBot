@@ -1,4 +1,4 @@
-import { getPool } from "./connection";
+import { getPool } from "./connection.js";
 
 export const pollRepository = {
   //投票の作成をDBに保存
@@ -25,10 +25,10 @@ export const pollRepository = {
   }) {
     const db = await getPool();
     await db.query(
-      `INSERT INTO poll_votes (message_id, user_id, option_id)
+      `INSERT INTO poll_votes (poll_id, user_id, option_index)
        VALUES (?, ?, ?)
        ON DUPLICATE KEY UPDATE
-         option_id = VALUES(option_id),
+         option_index = VALUES(option_index),
          voted_at = CURRENT_TIMESTAMP`,
       [vote.messageId, vote.userId, vote.optionId]
     );
@@ -38,10 +38,10 @@ export const pollRepository = {
   //投票取消（poll_votesから削除）
   async removeVote(vote: { messageId: string; userId: string }) {
     const db = await getPool();
-    await db.query(
-      `DELETE FROM poll_votes WHERE message_id = ? AND user_id = ?`,
-      [vote.messageId, vote.userId]
-    );
+    await db.query(`DELETE FROM poll_votes WHERE poll_id = ? AND user_id = ?`, [
+      vote.messageId,
+      vote.userId,
+    ]);
     console.log(`↩️ Vote removed: ${vote.userId}`);
   },
 };

@@ -20,7 +20,12 @@ config();
 startExpressServer();
 
 const client = new Client({
-  intents: [GatewayIntentBits.Guilds],
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildMessagePolls,
+  ],
 });
 
 client.once("ready", async () => {
@@ -62,11 +67,6 @@ client.on("interactionCreate", async (interaction: Interaction) => {
   if (!interaction.isChatInputCommand()) return;
   if (interaction.commandName !== "poll") return;
 
-  await interaction.reply({
-    content: "✅ 手動で投票を作成しました！",
-    ephemeral: true,
-  });
-
   if (interaction.channelId) {
     try {
       await createPoll(client, interaction.channelId); // ✅ createPollで送信＋DB保存を共通化
@@ -76,29 +76,37 @@ client.on("interactionCreate", async (interaction: Interaction) => {
     }
   }
 });
+//現在の状態dddiscord.jsのバージョンではではMessagePollVoteAddとMessagePollVoteRemoveにおいてmessage/user を記録できない
 //(vote: anyの型安全は後回しにします)
-client.on(Events.MessagePollVoteAdd, async (vote: any) => {
+client.on(Events.MessagePollVoteAdd, async (pollAnswer: any) => {
   try {
+    const optionIndex = String(pollAnswer.id ?? "0");
+    const optionText = String(pollAnswer.text ?? "不明");
+
     await pollRepository.saveVote({
-      messageId: vote.message.id,
-      userId: vote.user.id,
-      optionId: vote.option.id,
+      messageId: "0", // 仮のID
+      userId: "0", // 仮のユーザーID
+      optionId: optionIndex,
     });
-    console.log(`🗳️ ${vote.user.tag} が ${vote.option.text} に投票しました`);
+
+    console.log(`🗳️ 投票が追加されました（${optionText}）`);
   } catch (err) {
     console.error("❌ 投票保存エラー:", err);
   }
 });
+
 //(vote: anyの型安全は後回しにします)
-client.on(Events.MessagePollVoteRemove, async (vote: any) => {
+client.on(Events.MessagePollVoteRemove, async (pollAnswer: any) => {
   try {
+    const optionIndex = String(pollAnswer.id ?? "0");
+    const optionText = String(pollAnswer.text ?? "不明");
+
     await pollRepository.removeVote({
-      messageId: vote.message.id,
-      userId: vote.user.id,
+      messageId: "0",
+      userId: "0",
     });
-    console.log(
-      `↩️ ${vote.user.tag} が ${vote.option.text} の投票を取り消しました`
-    );
+
+    console.log(`↩️ 投票が削除されました（${optionText}）`);
   } catch (err) {
     console.error("❌ 投票削除エラー:", err);
   }

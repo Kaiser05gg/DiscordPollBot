@@ -1,16 +1,37 @@
-import "discord.js";
-import { Message, User, PollAnswer } from "discord.js";
+// src/types/discord.d.ts
 
 declare module "discord.js" {
-  interface MessagePollVoteAdd {
-    message: Message;
-    user: User;
-    option: PollAnswer;
+  export interface MessageCreateOptions {
+    poll?: {
+      question: {
+        text: string;
+      };
+      answers: {
+        text: string;
+      }[];
+      allowMultiselect?: boolean;
+      duration?: number;
+      layoutType?: number;
+    };
   }
 
-  interface MessagePollVoteRemove {
-    message: Message;
-    user: User;
-    option: PollAnswer;
+  export interface MessagePollVoteAdd {
+    message: import("discord.js").Message;
+    user: import("discord.js").User;
+    pollAnswer: {
+      id: number;
+      text: string;
+    };
+  }
+
+  export interface MessagePollVoteRemove {
+    message: import("discord.js").Message;
+    user: import("discord.js").User;
+    pollAnswer: {
+      id: number;
+      text: string;
+    };
   }
 }
+
+export {};

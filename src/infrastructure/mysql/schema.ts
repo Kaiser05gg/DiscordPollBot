@@ -1,4 +1,4 @@
-import { getPool } from "./connection";
+import { getPool } from "./connection.js";
 
 export const ensureTables = async () => {
   const db = await getPool();
