@@ -14,6 +14,7 @@ import { schedulePoll } from "./application/services/schedulePoll.js";
 import { registerCommands } from "./application/usecases/registerCommands.js";
 import { startExpressServer } from "./interfaces/http/server.js";
 import { ensureTables } from "./infrastructure/mysql/schema.js";
+import { setupPollListeners } from "./application/usecases/pollVoteHandlers.js";
 import { pollRepository } from "./infrastructure/mysql/pollRepository.js";
 import { Events, MessagePollVoteAdd, MessagePollVoteRemove } from "discord.js"; //client.on(Events.MessagePollVoteAdd, async (vote: any)の関数。現在後回しにしている。
 import { config } from "dotenv";
@@ -27,6 +28,7 @@ client.once("ready", async () => {
   await ensureTables();
   await registerCommands(client);
   schedulePoll(client);
+  setupPollListeners(client);
 });
 
 client.on("interactionCreate", async (interaction: Interaction) => {
@@ -40,41 +42,6 @@ client.on("interactionCreate", async (interaction: Interaction) => {
     } catch (err) {
       console.error("❌ 手動投票エラー:", err);
     }
-  }
-});
-//現在の状態dddiscord.jsのバージョンではではMessagePollVoteAddとMessagePollVoteRemoveにおいてmessage/user を記録できない
-//(vote: anyの型安全は後回しにします)
-client.on(Events.MessagePollVoteAdd, async (pollAnswer: any) => {
-  try {
-    const optionIndex = String(pollAnswer.id ?? "0");
-    const optionText = String(pollAnswer.text ?? "不明");
-
-    await pollRepository.saveVote({
-      messageId: "0", // 仮のID
-      userId: "0", // 仮のユーザーID
-      optionId: optionIndex,
-    });
-
-    console.log(`🗳️ 投票が追加されました（${optionText}）`);
-  } catch (err) {
-    console.error("❌ 投票保存エラー:", err);
-  }
-});
-
-//(vote: anyの型安全は後回しにします)
-client.on(Events.MessagePollVoteRemove, async (pollAnswer: any) => {
-  try {
-    const optionIndex = String(pollAnswer.id ?? "0");
-    const optionText = String(pollAnswer.text ?? "不明");
-
-    await pollRepository.removeVote({
-      messageId: "0",
-      userId: "0",
-    });
-
-    console.log(`↩️ 投票が削除されました（${optionText}）`);
-  } catch (err) {
-    console.error("❌ 投票削除エラー:", err);
   }
 });
 
