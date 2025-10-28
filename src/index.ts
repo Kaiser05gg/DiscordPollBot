@@ -10,6 +10,8 @@ import {
 } from "discord.js";
 import { createPoll } from "./application/usecases/createPoll.js";
 import { client } from "./infrastructure/discord/discordClient.js";
+import { schedulePoll } from "./application/services/schedulePoll.js";
+import { registerCommands } from "./application/usecases/registerCommands.js";
 import { startExpressServer } from "./interfaces/http/server.js";
 import { ensureTables } from "./infrastructure/mysql/schema.js";
 import { pollRepository } from "./infrastructure/mysql/pollRepository.js";
@@ -23,17 +25,8 @@ startExpressServer();
 client.once("ready", async () => {
   console.log(`✅ Logged in as ${client.user?.tag}`);
   await ensureTables();
-  cron.schedule("0  12 * * *", async () => {
-    const channelId = process.env.CHANNEL_ID;
-    if (!channelId) return console.error("❌ CHANNEL_ID が設定されていません");
-
-    try {
-      await createPoll(client, channelId); // ✅ 自動投票もcreatePollを使用
-      console.log("✅ JST12:00 定時投票を送信しました");
-    } catch (err) {
-      console.error("❌ 自動投票エラー:", err);
-    }
-  });
+  await registerCommands(client);
+  schedulePoll(client);
 });
 
 client.on("interactionCreate", async (interaction: Interaction) => {
