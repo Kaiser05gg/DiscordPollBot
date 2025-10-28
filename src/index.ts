@@ -20,15 +20,6 @@ config();
 
 startExpressServer();
 
-const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent,
-    GatewayIntentBits.GuildMessagePolls,
-  ],
-});
-
 client.once("ready", async () => {
   console.log(`✅ Logged in as ${client.user?.tag}`);
   await ensureTables();
