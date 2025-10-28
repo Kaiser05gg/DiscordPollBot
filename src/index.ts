@@ -9,6 +9,7 @@ import {
   VoiceState,
 } from "discord.js";
 import { createPoll } from "./application/usecases/createPoll.js";
+import { client } from "./infrastructure/discord/discordClient.js";
 import { startExpressServer } from "./interfaces/http/server.js";
 import { ensureTables } from "./infrastructure/mysql/schema.js";
 import { pollRepository } from "./infrastructure/mysql/pollRepository.js";
