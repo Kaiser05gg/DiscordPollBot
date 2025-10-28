@@ -34,25 +34,6 @@ client.once("ready", async () => {
       console.error("❌ 自動投票エラー:", err);
     }
   });
-
-  const commands = [
-    {
-      name: "poll",
-      description: "本日のVALORANTの投票を手動で投稿します",
-      options: [],
-    },
-  ];
-
-  const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN!);
-
-  try {
-    await rest.put(Routes.applicationCommands(process.env.CLIENT_ID!), {
-      body: commands,
-    });
-    console.log("✅ スラッシュコマンド /poll を登録しました");
-  } catch (error) {
-    console.error("❌ コマンド登録に失敗しました:", error);
-  }
 });
 
 client.on("interactionCreate", async (interaction: Interaction) => {
