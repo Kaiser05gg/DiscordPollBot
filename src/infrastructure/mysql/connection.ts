@@ -1,3 +1,4 @@
+import "dotenv/config";
 import mysql, { Pool } from "mysql2/promise";
 
 export let pool: Pool | null = null;
@@ -17,6 +18,9 @@ export const getPool = async () => {
     supportBigNumbers: true,
     bigNumberStrings: true,
     dateStrings: true,
+    ssl: {
+      rejectUnauthorized: false,
+    },
   });
 
   return pool;
