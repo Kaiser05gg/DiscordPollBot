@@ -14,15 +14,15 @@
 
 ### やることリスト：
 
-- ~~ DEVELOPER PORTAL  を使い discordbot アカウントの作成&初期設定{1} ~~2h
-  ~~ →  トークンの取得 ~~0.1h
+- DEVELOPER PORTAL  を使い discordbot アカウントの作成&初期設定{1} ~~2h
+  →  トークンの取得 ~~0.1h
 - テストサーバーに bot を入れる。工数 2h
-- ~~ discordAPI を用いる必要があるかの調査。工数 10h ~~ 0h
+- discordAPI を用いる必要があるかの調査。工数 10h ~~ 0h
 
-- ~~TS を用いて投票する項目を指定できるようにする(poc)。10h~~
-- ~~TS を用いて項目数を５つまで追加できるようにする。1h~~
+- TS を用いて投票する項目を指定できるようにする(poc)。10h~~
+- TS を用いて項目数を５つまで追加できるようにする。1h~~
 - TS を用いて指定した時間に投票が締め切られるようにする(poc)。10h
-- ~~TS を用いて指定した時間に発射されるようにする(poc)。5h~~
+- TS を用いて指定した時間に発射されるようにする(poc)。5h~~
   ＊逐一テストサーバーで試す。
   ↓
 - 拠点サーバーで使う 1h
@@ -35,5 +35,5 @@
   https://app.koyeb.com/services/f5154f82-efdd-4eb3-ab0b-71351472ad8b?deploymentId=190ba4c1-31c8-40a8-b298-bd16ea4b39de
 - UptimeRobot（指定したスケジュールで HTTP リクエストを送るサービス）スリープ防止用
   https://dashboard.uptimerobot.com/monitors/800874343
-
-## 締日：６末
+- PaaS
+  Clever Cloud

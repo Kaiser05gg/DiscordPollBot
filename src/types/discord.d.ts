@@ -1,5 +1,3 @@
-// src/types/discord.d.ts
-
 declare module "discord.js" {
   export interface MessageCreateOptions {
     poll?: {
