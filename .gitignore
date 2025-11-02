@@ -5,3 +5,8 @@ node_modules/
 .vscode/
 firebase-key.json
 venv/
+__pycache__/
+serviceAccountKey.json
+.tsbuildinfo
+dbdata/
+.log
