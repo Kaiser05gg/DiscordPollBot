@@ -11,6 +11,7 @@ services:
       - DISCORD_TOKEN=${DISCORD_TOKEN}
       - CLIENT_ID=${CLIENT_ID}
       - CHANNEL_ID=${CHANNEL_ID}
+      - FIREBASE_KEY=${FIREBASE_KEY}
     volumes:
       - .:/usr/src/app
       - ./firebase-key.json:/usr/src/app/firebase-key.json

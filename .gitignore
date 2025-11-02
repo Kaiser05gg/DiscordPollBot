@@ -4,3 +4,4 @@ dist
 node_modules/
 .vscode/
 firebase-key.json
+venv/

@@ -11,9 +11,13 @@
     "typeRoots": [
       "./src/types",
       "./node_modules/@types"
-    ]
+    ],
+    "baseUrl": "."
   },
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "analytics/**/*.js",
+    "src/types/**/*.d.ts",
+    "src/python/**/*.ts"
   ]
 }

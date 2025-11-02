@@ -1,26 +1,47 @@
-import { Client, Interaction } from "discord.js";
+import { Client, Interaction, AttachmentBuilder } from "discord.js";
 import { createPoll } from "./createPoll.js";
+import { generateGraph } from "analytics/pythonExecutor.js";
 
 export const setupInteractionHandlers = (client: Client) => {
   client.on("interactionCreate", async (interaction: Interaction) => {
     if (!interaction.isChatInputCommand()) return;
-    if (interaction.commandName !== "poll") return;
-    if (interaction.channelId) {
+    if (interaction.commandName === "poll" && interaction.channelId) {
       try {
         await interaction.reply({
           content: "🗳️ 投票を作成中です...",
           ephemeral: true,
         });
         await createPoll(client, interaction.channelId);
-        console.log("✅ 手動投票を作成しました");
         await interaction.editReply("✅ 投票を作成しました！");
       } catch (err) {
         console.error("❌ 手動投票エラー:", err);
-        if (interaction.replied || interaction.deferred) {
-          await interaction.editReply("⚠️ 投票作成に失敗しました。");
+        await interaction.editReply("⚠️ 投票作成に失敗しました。");
+      }
+    }
+
+    if (interaction.commandName === "graph") {
+      try {
+        await interaction.reply({
+          content: "📊 グラフを生成中です。少々お待ちください...",
+          ephemeral: true,
+        });
+
+        const now = new Date();
+        const month = now.toISOString().slice(0, 7);
+        const result = await generateGraph(month);
+
+        if (result.status === "success" && result.file) {
+          const file = new AttachmentBuilder(result.file);
+          await interaction.editReply({
+            content: "📈 こちらが今月の投票結果です！",
+            files: [file],
+          });
         } else {
-          await interaction.reply("⚠️ 投票作成に失敗しました。");
+          await interaction.editReply(`⚠️ グラフ生成エラー: ${result.message}`);
         }
+      } catch (err) {
+        console.error("❌ /graph 実行エラー:", err);
+        await interaction.editReply("❌ グラフ生成中にエラーが発生しました。");
       }
     }
   });

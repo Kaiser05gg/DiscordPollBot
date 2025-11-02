@@ -6,6 +6,10 @@ export const registerCommands = async (client: Client) => {
       name: "poll",
       description: "本日のVALORANTの投票を手動で投稿します",
     },
+    {
+      name: "graph",
+      description: "指定した月の投票結果をグラフ化します",
+    },
   ];
 
   const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN!);
@@ -14,7 +18,7 @@ export const registerCommands = async (client: Client) => {
     await rest.put(Routes.applicationCommands(process.env.CLIENT_ID!), {
       body: commands,
     });
-    console.log("✅ スラッシュコマンド /poll を登録しました");
+    console.log("✅ スラッシュコマンド /poll・/graph を登録しました");
   } catch (err) {
     console.error("❌ コマンド登録エラー:", err);
   }
