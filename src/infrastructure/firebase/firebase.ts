@@ -1,8 +1,11 @@
 import { initializeApp, cert } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
-import fs from "fs";
 
-const serviceAccount = JSON.parse(fs.readFileSync("firebase-key.json", "utf8"));
+const firebaseKey = process.env.FIREBASE_KEY;
+
+if (!firebaseKey) throw new Error("❌ FIREBASE_KEY が設定されていません");
+
+const serviceAccount = JSON.parse(firebaseKey);
 
 initializeApp({
   credential: cert(serviceAccount),

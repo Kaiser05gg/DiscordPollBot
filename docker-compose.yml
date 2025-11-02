@@ -1,30 +1,20 @@
 version: "3.9"
+
 services:
-  db:
-    image: mysql:8.0
-    container_name: discordpollbot-mysql
+  bot:
+    container_name: discordpollbot
+    build: .
     restart: unless-stopped
+    command: npm run dev
     environment:
-      MYSQL_ROOT_PASSWORD: root_pass
-      MYSQL_DATABASE: discord_polls
-      MYSQL_USER: Kaiser05gg
-      MYSQL_PASSWORD: discord_poll
-      TZ: Asia/Tokyo
-    ports:
-      - "3307:3306"
+      - NODE_ENV=production
+      - DISCORD_TOKEN=${DISCORD_TOKEN}
+      - CLIENT_ID=${CLIENT_ID}
+      - CHANNEL_ID=${CHANNEL_ID}
     volumes:
-      - dbdata:/var/lib/mysql
-    command:
-      [
-        "--default-authentication-plugin=mysql_native_password",
-        "--character-set-server=utf8mb4",
-        "--collation-server=utf8mb4_0900_ai_ci",
-      ]
-    healthcheck:
-      test:
-        ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uapp -papp_pass --silent"]
-      interval: 5s
-      timeout: 3s
-      retries: 20
-volumes:
-  dbdata:
+      - .:/usr/src/app
+      - ./firebase-key.json:/usr/src/app/firebase-key.json
+    ports:
+      - "3000:3000"
+    working_dir: /usr/src/app
+    tty: true

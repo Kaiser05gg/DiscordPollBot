@@ -32,7 +32,7 @@ export const createPoll = async (client: Client, channelId: string) => {
   await savePollResultUseCase({
     question: "本日の VALORANT",
     results: {}, // ← まだ投票結果なし
-    top_option: null,
+    top_option: "",
     voted_at: new Date(),
   });
 
