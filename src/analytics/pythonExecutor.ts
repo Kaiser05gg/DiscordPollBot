@@ -1,3 +1,4 @@
+export {};
 import { spawn } from "child_process";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -10,7 +11,9 @@ const __dirname = path.dirname(__filename);
  * @param {string} month - 例: "2025-11"
  * @returns {Promise<{status: string, file?: string, message?: string}>}
  */
-export const generateGraph = async (month) => {
+export const generateGraph = async (
+  month: string
+): Promise<{ status: string; file?: string; message?: string }> => {
   return new Promise((resolve, reject) => {
     const scriptPath = path.join(
       __dirname,

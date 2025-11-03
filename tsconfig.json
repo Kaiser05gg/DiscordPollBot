@@ -3,6 +3,7 @@
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
+    "resolveJsonModule": true,
     "esModuleInterop": true,
     "moduleDetection": "force",
     "outDir": "./dist",
@@ -15,9 +16,6 @@
     "baseUrl": "."
   },
   "include": [
-    "src/**/*",
-    "analytics/**/*.js",
-    "src/types/**/*.d.ts",
-    "src/python/**/*.ts"
+    "src/**/*"
   ]
 }

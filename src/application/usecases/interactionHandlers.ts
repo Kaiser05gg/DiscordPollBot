@@ -1,6 +1,6 @@
 import { Client, Interaction, AttachmentBuilder } from "discord.js";
 import { createPoll } from "./createPoll.js";
-import { generateGraph } from "analytics/pythonExecutor.js";
+import { generateGraph } from "../../analytics/pythonExecutor.js";
 
 export const setupInteractionHandlers = (client: Client) => {
   client.on("interactionCreate", async (interaction: Interaction) => {
