@@ -8,7 +8,9 @@ interface PollResult {
 }
 
 export const savePollResult = async (data: PollResult) => {
-  const docId = `${data.voted_at.toISOString().split("T")[0]}_${Date.now()}`;
+  const jstNow = new Date(data.voted_at.getTime() + 9 * 60 * 60 * 1000);
+  const jstDate = jstNow.toISOString().split("T")[0];
+  const docId = `${jstDate}_${Date.now()}`;
 
   await db
     .collection("poll_results")
@@ -16,8 +18,6 @@ export const savePollResult = async (data: PollResult) => {
     .set({
       question: data.question,
       results: data.results,
-      voted_at: Timestamp.fromDate(data.voted_at),
+      voted_at: Timestamp.fromDate(jstNow),
     });
-
-  console.log(`✅ Firestoreに投票結果を保存しました: ${data.question}`);
 };
