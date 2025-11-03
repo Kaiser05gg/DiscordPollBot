@@ -1,6 +1,10 @@
+import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), "../../"))
+
+from analytics.usecases.generate_monthly_report import generate_monthly_report
 import sys
 import json
-from ..usecases.generate_monthly_report import generate_monthly_report
 
 if __name__ == "__main__":
     target_month = sys.argv[1] if len(sys.argv) > 1 else "2025-11"

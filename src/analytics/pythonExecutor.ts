@@ -17,9 +17,7 @@ export const generateGraph = async (
   return new Promise((resolve, reject) => {
     const scriptPath = path.join(
       __dirname,
-      "..",
-      "interfaces",
-      "cli_entrypoint.py"
+      "../../src/analytics/interfaces/cli_entrypoint.py"
     );
 
     const py = spawn("python3", [scriptPath, month], {
