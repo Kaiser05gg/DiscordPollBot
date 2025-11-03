@@ -8,9 +8,13 @@ interface PollData {
 }
 
 export const savePollToFirestore = async (pollData: PollData) => {
-  const today = new Date();
-  const docId = today.toISOString().split("T")[0] + "_" + Date.now();
+  // JSTで日付生成
+  const now = new Date();
+  const jstNow = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const jstDate = jstNow.toISOString().split("T")[0];
+  const docId = `${jstDate}_${Date.now()}`;
 
+  // firebase-admin の書き込みAPIを使用
   await db
     .collection("poll_results")
     .doc(docId)
@@ -18,7 +22,7 @@ export const savePollToFirestore = async (pollData: PollData) => {
       question: pollData.question,
       results: pollData.results,
       top_option: pollData.top_option,
-      voted_at: Timestamp.fromDate(today),
+      voted_at: Timestamp.fromDate(jstNow),
     });
 
   console.log(`✅ Firestoreに投票結果を保存しました: ${pollData.question}`);
