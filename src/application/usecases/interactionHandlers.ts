@@ -21,23 +21,20 @@ export const setupInteractionHandlers = (client: Client) => {
 
     if (interaction.commandName === "graph") {
       try {
-        await interaction.reply({
-          content: "📊 グラフを生成中です。少々お待ちください...",
-          ephemeral: true,
-        });
+        await interaction.reply("⏳ グラフ生成中です…");
 
-        const now = new Date();
-        const month = now.toISOString().slice(0, 7);
+        const month = new Date().toISOString().slice(0, 7);
         const result = await generateGraph(month);
 
         if (result.status === "success" && result.file) {
-          const file = new AttachmentBuilder(result.file);
-          await interaction.editReply({
-            content: "📈 こちらが今月の投票結果です！",
-            files: [file],
+          await interaction.followUp({
+            content: "📊 こちらが今月の投票結果です！",
+            files: [result.file],
           });
         } else {
-          await interaction.editReply(`⚠️ グラフ生成エラー: ${result.message}`);
+          await interaction.followUp({
+            content: `⚠️ グラフ生成エラー: ${result.message ?? "不明なエラー"}`,
+          });
         }
       } catch (err) {
         console.error("❌ /graph 実行エラー:", err);
