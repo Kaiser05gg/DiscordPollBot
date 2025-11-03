@@ -1,23 +1,33 @@
+FROM node:20-bookworm-slim AS builder
+
+WORKDIR /usr/src/app
+
+COPY package*.json ./
+RUN npm ci
+
+COPY . .
+RUN npm run build
+
+FROM python:3.11-slim AS pydeps
+
+WORKDIR /usr/src/app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
 FROM node:20-bookworm-slim
 
 WORKDIR /usr/src/app
 
 COPY package*.json ./
+RUN npm ci --omit=dev
 
-RUN npm ci
+COPY --from=builder /usr/src/app/dist ./dist
+COPY --from=pydeps /usr/local/lib/python3.11 /usr/local/lib/python3.11
+COPY --from=pydeps /usr/local/bin/python3 /usr/local/bin/python3
+COPY --from=pydeps /usr/local/bin/pip /usr/local/bin/pip
 
-COPY requirements.txt .
-RUN apt-get update \
-  && apt-get install -y --no-install-recommends python3 python3-pip \
-  && pip install --no-cache-dir --break-system-packages -r requirements.txt \
-  && apt-get clean \
-  && rm -rf /var/lib/apt/lists/*
-
-COPY . .
-
-RUN npm run build
-RUN npm prune --omit=dev
+ENV PYTHONPATH="/usr/local/lib/python3.11/site-packages"
 
 EXPOSE 3000
-
 CMD ["node", "dist/index.js"]
