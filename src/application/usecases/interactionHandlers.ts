@@ -1,10 +1,12 @@
 import { Client, Interaction, AttachmentBuilder } from "discord.js";
 import { createPoll } from "./createPoll.js";
 import { generateGraph } from "../../analytics/pythonExecutor.js";
+import fs from "fs";
 
 export const setupInteractionHandlers = (client: Client) => {
   client.on("interactionCreate", async (interaction: Interaction) => {
     if (!interaction.isChatInputCommand()) return;
+
     if (interaction.commandName === "poll" && interaction.channelId) {
       try {
         await interaction.reply({
@@ -27,14 +29,23 @@ export const setupInteractionHandlers = (client: Client) => {
         const result = await generateGraph(month);
 
         if (result.status === "success" && result.file) {
-          await interaction.followUp({
-            content: "📊 こちらが今月の投票結果です！",
-            files: [result.file],
-          });
+          if (fs.existsSync(result.file)) {
+            const attachment = new AttachmentBuilder(result.file);
+            await interaction.followUp({
+              content: `📊 ${month} の投票結果グラフはこちらです！`,
+              files: [attachment],
+            });
+          } else {
+            await interaction.followUp(
+              "⚠️ グラフファイルが見つかりませんでした。"
+            );
+          }
         } else {
-          await interaction.followUp({
-            content: `⚠️ グラフ生成エラー: ${result.message ?? "不明なエラー"}`,
-          });
+          const message =
+            result.message && result.message.length > 1800
+              ? result.message.slice(0, 1800) + "…(省略)"
+              : result.message ?? "不明なエラー";
+          await interaction.followUp(`⚠️ グラフ生成エラー:\n${message}`);
         }
       } catch (err) {
         console.error("❌ /graph 実行エラー:", err);
