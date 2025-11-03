@@ -23,7 +23,7 @@ export const setupInteractionHandlers = (client: Client) => {
 
     if (interaction.commandName === "graph") {
       try {
-        await interaction.reply("⏳ グラフ生成中です…");
+        await interaction.deferReply();
 
         const month = new Date().toISOString().slice(0, 7);
         const result = await generateGraph(month);
@@ -31,12 +31,12 @@ export const setupInteractionHandlers = (client: Client) => {
         if (result.status === "success" && result.file) {
           if (fs.existsSync(result.file)) {
             const attachment = new AttachmentBuilder(result.file);
-            await interaction.followUp({
+            await interaction.editReply({
               content: `📊 ${month} の投票結果グラフはこちらです！`,
               files: [attachment],
             });
           } else {
-            await interaction.followUp(
+            await interaction.editReply(
               "⚠️ グラフファイルが見つかりませんでした。"
             );
           }
@@ -45,7 +45,7 @@ export const setupInteractionHandlers = (client: Client) => {
             result.message && result.message.length > 1800
               ? result.message.slice(0, 1800) + "…(省略)"
               : result.message ?? "不明なエラー";
-          await interaction.followUp(`⚠️ グラフ生成エラー:\n${message}`);
+          await interaction.editReply(`⚠️ グラフ生成エラー:\n${message}`);
         }
       } catch (err) {
         console.error("❌ /graph 実行エラー:", err);
