@@ -21,19 +21,18 @@ export const setupInteractionHandlers = (client: Client) => {
     }
 
     if (interaction.commandName === "graph") {
+      const month = new Date().toISOString().slice(0, 7);
+
       try {
-        await interaction.deferReply();
+        await interaction.deferReply({ ephemeral: false });
 
-        const month = new Date().toISOString().slice(0, 7);
         console.log(`📊 Generating graph for ${month}`);
-
         const result = await generateGraph(month);
 
         if (result.status === "success" && result.file) {
-          const attachment = new AttachmentBuilder(result.file);
           await interaction.editReply({
             content: `📊 ${month} の投票結果グラフはこちらです！`,
-            files: [attachment],
+            files: [result.file],
           });
         } else {
           const message =
@@ -46,13 +45,9 @@ export const setupInteractionHandlers = (client: Client) => {
         console.error("❌ /graph 実行エラー:", err);
 
         try {
-          if (interaction.deferred || interaction.replied) {
-            await interaction.editReply(
-              "❌ グラフ生成中にエラーが発生しました。"
-            );
-          } else {
-            await interaction.reply("❌ グラフ生成中にエラーが発生しました。");
-          }
+          await interaction.editReply(
+            "❌ グラフ生成中にエラーが発生しました。"
+          );
         } catch (nestedErr) {
           console.error("⚠️ Interaction reply failed:", nestedErr);
         }
