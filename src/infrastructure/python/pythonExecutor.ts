@@ -2,7 +2,10 @@ import { spawn } from "child_process";
 import path from "path";
 
 export const runPythonScript = (month: string): Promise<any> => {
-  const scriptPath = path.resolve("src/analytics/interfaces/cli_entrypoint.py");
+  const scriptPath = path.resolve(
+    __dirname,
+    "../../analytics/interfaces/cli_entrypoint.py"
+  );
 
   return new Promise((resolve, reject) => {
     const process = spawn("python3", [scriptPath, month]);
