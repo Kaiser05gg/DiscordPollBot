@@ -21,7 +21,7 @@ export const graphCommand = {
       const result = await generateGraphUseCase(month);
 
       if (result.status === "success") {
-        const file = new AttachmentBuilder(result.file);
+        const file = new AttachmentBuilder(result.file as string);
         await interaction.editReply({
           content: `📊 ${month} の投票結果グラフです！`,
           files: [file],

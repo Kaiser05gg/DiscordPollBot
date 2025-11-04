@@ -1,30 +1,47 @@
 import { spawn } from "child_process";
 import path from "path";
 
-export const runPythonScript = (month: string): Promise<any> => {
-  const scriptPath = path.resolve(
-    __dirname,
-    "../../analytics/interfaces/cli_entrypoint.py"
-  );
+export const runPythonScript = async (
+  month: string
+): Promise<{ status: string; file?: string; message?: string }> => {
+  return new Promise((resolve) => {
+    const projectRoot = "/usr/src/app";
+    const scriptPath = path.join(
+      projectRoot,
+      "analytics/interfaces/cli_entrypoint.py"
+    );
 
-  return new Promise((resolve, reject) => {
-    const process = spawn("python3", [scriptPath, month]);
-    let output = "";
-    let errorOutput = "";
+    console.log("📊 Executing Python:", scriptPath);
 
-    process.stdout.on("data", (data) => (output += data.toString()));
-    process.stderr.on("data", (err) => (errorOutput += err.toString()));
+    const py = spawn("python3", [scriptPath, month], {
+      cwd: projectRoot,
+    });
 
-    process.on("close", () => {
-      if (errorOutput) {
-        console.error("❌ Pythonエラー:", errorOutput);
+    let stdoutData = "";
+    let stderrData = "";
+
+    py.stdout.on("data", (chunk) => (stdoutData += chunk));
+    py.stderr.on("data", (chunk) => (stderrData += chunk));
+
+    py.on("close", () => {
+      if (stderrData) {
+        const shortErr = stderrData.slice(0, 200);
+        console.error("⚠️ Python stderr:", shortErr);
+        return resolve({ status: "error", message: shortErr });
       }
 
       try {
-        const result = JSON.parse(output);
-        resolve(result);
-      } catch (err) {
-        reject(`JSON解析失敗: ${output}`);
+        const result = JSON.parse(stdoutData);
+        if (result.status === "success") {
+          console.log("✅ Python グラフ生成成功:", result.file);
+          resolve(result);
+        } else {
+          console.error("❌ Python 内部エラー:", result.message);
+          resolve(result);
+        }
+      } catch {
+        console.error("⚠️ JSON パース失敗:", stdoutData.slice(0, 200));
+        resolve({ status: "error", message: "JSON parse error" });
       }
     });
   });
