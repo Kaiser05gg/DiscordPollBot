@@ -1,4 +1,4 @@
-import { Client, Interaction, AttachmentBuilder } from "discord.js";
+import { Client, Interaction } from "discord.js";
 import { createPoll } from "./createPoll.js";
 import { runPythonScript as generateGraph } from "../../infrastructure/python/pythonExecutor.js";
 
@@ -6,35 +6,24 @@ export const setupInteractionHandlers = (client: Client) => {
   client.on("interactionCreate", async (interaction: Interaction) => {
     if (!interaction.isChatInputCommand()) return;
 
-    if (interaction.commandName === "poll" && interaction.channelId) {
-      try {
-        await interaction.reply({
-          content: "🗳️ 投票を作成中です...",
-          ephemeral: true,
-        });
-        await createPoll(client, interaction.channelId);
-        await interaction.editReply("✅ 投票を作成しました！");
-      } catch (err) {
-        console.error("❌ 手動投票エラー:", err);
-        await interaction.editReply("⚠️ 投票作成に失敗しました。");
-      }
-    }
-
     if (interaction.commandName === "graph") {
       try {
-        // 👇 deferをやめて即時返信に変更（タイムアウト防止）
+        const monthOption = interaction.options.getInteger("month"); // /graph 10 のように指定できる
+        const now = new Date();
+        const targetMonth = monthOption
+          ? `${now.getFullYear()}-${String(monthOption).padStart(2, "0")}`
+          : now.toISOString().slice(0, 7);
+
         await interaction.reply(
-          "📊 グラフ生成中です。完了したらここに投稿します！"
+          `📊 ${targetMonth} のグラフを生成中です。完了したらここに投稿します！`
         );
 
-        // 非同期でPython呼び出し
         (async () => {
-          const month = new Date().toISOString().slice(0, 7);
-          const result = await generateGraph(month);
+          const result = await generateGraph(targetMonth);
 
           if (result.status === "success" && result.file) {
             await interaction.followUp({
-              content: `✅ ${month} の投票結果グラフです！`,
+              content: `✅ ${targetMonth} の投票結果グラフです！`,
               files: [{ attachment: result.file }],
             });
           } else {
