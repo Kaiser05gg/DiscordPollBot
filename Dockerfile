@@ -25,7 +25,7 @@ ENV LD_LIBRARY_PATH="/usr/local/lib:/usr/local/lib/python3.11:/usr/lib/x86_64-li
 ENV PYTHONPATH="/usr/local/lib/python3.11/site-packages"
 
 COPY --from=builder /usr/src/app/dist ./dist
-COPY --from=builder /usr/src/app/analytics ./analytics
+COPY --from=builder /usr/src/app/src/analytics ./analytics
 
 EXPOSE 3000
 CMD ["node", "dist/index.js"]
