@@ -11,6 +11,14 @@ const commands = [
   {
     name: "graph",
     description: "指定した月の投票結果をグラフ化します",
+    options: [
+      {
+        name: "month",
+        description: "表示したい月",
+        type: 4, // INTEGER型（Discordの定義では4が整数）
+        required: false,
+      },
+    ],
   },
 ];
 

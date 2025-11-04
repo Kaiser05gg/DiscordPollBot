@@ -3,6 +3,9 @@ import os
 
 class GraphGenerator:
     def generate(self, aggregated_results, target_month):
+        if not aggregated_results or sum(aggregated_results.values()) == 0:
+            print(f"⚠️ No data found for {target_month}")
+            raise ValueError(f"No poll data found for {target_month}")
         # Firestoreの日本語ラベルを英語に変換
         label_map = {
             "〜8時": "8AM",

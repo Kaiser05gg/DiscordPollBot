@@ -27,11 +27,12 @@ export const setupInteractionHandlers = (client: Client) => {
               files: [{ attachment: result.file }],
             });
           } else {
-            await interaction.followUp({
-              content: `⚠️ グラフ生成に失敗しました。\n${
-                result.message ?? "不明なエラー"
-              }`,
-            });
+            const message = result.message?.includes("No poll data found")
+              ? `⚠️ ${targetMonth} のデータが存在しませんでした。`
+              : `⚠️ グラフ生成に失敗しました。\n${
+                  result.message ?? "不明なエラー"
+                }`;
+            await interaction.editReply({ content: message });
           }
         })();
       } catch (err) {
