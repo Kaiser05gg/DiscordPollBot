@@ -6,12 +6,13 @@ export const runPythonScript = async (
 ): Promise<{ status: string; file?: string; message?: string }> => {
   return new Promise((resolve) => {
     const projectRoot = "/usr/src/app";
+
     const scriptPath = path.join(
       projectRoot,
       "analytics/interfaces/cli_entrypoint.py"
     );
 
-    console.log("📊 Executing Python:", scriptPath);
+    console.log("📊 実行パス:", scriptPath);
 
     const py = spawn("python3", [scriptPath, month], {
       cwd: projectRoot,
