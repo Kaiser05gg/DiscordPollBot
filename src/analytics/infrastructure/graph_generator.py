@@ -4,25 +4,25 @@ import os
 
 class GraphGenerator:
     def generate(self, aggregated_results, target_month):
-        # ✅ 可能性のあるフォントパス一覧（macOS / Docker両対応）
+        # ✅ macOS & Docker 両対応フォントパス
         possible_fonts = [
             "/System/Library/Fonts/ヒラギノ角ゴシック W4.ttc",  # macOS
             "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",  # Debian(bookworm)
             "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
+            "/usr/share/fonts/opentype/noto/NotoSansCJKjp-Regular.otf",  # 一部環境用
         ]
 
         font_path = next((p for p in possible_fonts if os.path.exists(p)), None)
 
         if font_path:
             fm.fontManager.addfont(font_path)
-            plt.rcParams["font.family"] = fm.FontProperties(fname=font_path).get_name()
-            print(f"✅ 使用フォント: {font_path}")
+            prop = fm.FontProperties(fname=font_path)
+            plt.rcParams["font.family"] = prop.get_name()
+            print(f"✅ 使用フォント: {font_path} ({prop.get_name()})")
         else:
-            # ✅ 'Noto Sans CJK' に変更（'JP'を削除）
-            plt.rcParams["font.family"] = "Noto Sans CJK"
-            print("⚠️ 日本語フォントが見つからず、デフォルトにフォールバックしました。")
+            print("⚠️ 日本語フォントが見つかりません。英字フォントで出力します。")
 
-        # ✅ 出力設定
+        # ✅ 出力先設定
         project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../.."))
         output_dir = os.path.join(project_root, "analytics", "output")
         os.makedirs(output_dir, exist_ok=True)
