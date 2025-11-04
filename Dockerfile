@@ -37,4 +37,6 @@ RUN ln -sf /usr/local/bin/python3 /usr/bin/python3
 ENV PYTHONPATH="/usr/local/lib/python3.11/site-packages"
 
 EXPOSE 3000
+ENV PATH="/usr/local/bin:$PATH"
+ENV PYTHONPATH="/usr/local/lib/python3.11/site-packages"
 CMD ["node", "dist/index.js"]
