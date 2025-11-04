@@ -1,48 +1,44 @@
 import matplotlib.pyplot as plt
-import matplotlib.font_manager as fm
 import os
 
 class GraphGenerator:
     def generate(self, aggregated_results, target_month):
-        #macOS & Docker両対応パス
-        possible_fonts = [
-            "/System/Library/Fonts/ヒラギノ角ゴシック W4.ttc",  # macOS
-            "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",  # Debian(bookworm)
-            "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
-            "/usr/share/fonts/opentype/noto/NotoSansCJKjp-Regular.otf",
-        ]
+        # Firestoreの日本語ラベルを英語に変換
+        label_map = {
+            "〜8時": "8AM",
+            "8〜9": "8-9AM",
+            "9時": "9AM",
+            "10時半〜": "10:30AM-",
+            "時間未定": "TBD",
+            "不参加": "Absent",
+        }
 
-        font_path = next((p for p in possible_fonts if os.path.exists(p)), None)
+        # 日本語 → 英語へ置き換え
+        converted_results = {}
+        for jp_label, count in aggregated_results.items():
+            en_label = label_map.get(jp_label, jp_label)
+            converted_results[en_label] = count
 
-        if font_path:
-            fm.fontManager.addfont(font_path)
-            prop = fm.FontProperties(fname=font_path)
-            plt.rcParams["font.family"] = prop.get_name()
-            plt.rcParams["font.sans-serif"] = [prop.get_name()]
-            plt.rcParams["axes.unicode_minus"] = False  # 「−」が豆腐になるのを防ぐ
-            print(f"✅ 使用フォント: {font_path} ({prop.get_name()})")
-        else:
-            print("⚠️ 日本語フォントが見つかりません。英字フォントで出力します。")
+        # 描画順序
+        fixed_order = ["8AM", "8-9AM", "9AM", "10:30AM-", "TBD", "Absent"]
+        ordered_keys = [k for k in fixed_order if k in converted_results]
+        ordered_values = [converted_results.get(k, 0) for k in ordered_keys]
 
-        # 出力設定
+        # 出力パス
         project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../.."))
         output_dir = os.path.join(project_root, "analytics", "output")
         os.makedirs(output_dir, exist_ok=True)
         path = os.path.join(output_dir, f"graph_{target_month}.png")
 
-        # データ整形
-        fixed_order = ["〜8時", "8〜9", "9時", "10時半〜", "不参加"]
-        ordered_keys = [k for k in fixed_order if k in aggregated_results]
-        ordered_values = [aggregated_results.get(k, 0) for k in ordered_keys]
-
-        # グラフ描画
+        # グラフ描画（英語フォントのみ使用 → フォントエラー消失）
         plt.figure(figsize=(8, 5))
         plt.bar(ordered_keys, ordered_values, color="skyblue")
-        plt.title(f"{target_month} の投票結果", fontproperties=prop)
-        plt.xlabel("選択肢", fontproperties=prop)
-        plt.ylabel("得票数", fontproperties=prop)
+        plt.title(f"{target_month} Poll Results")
+        plt.xlabel("Options")
+        plt.ylabel("Votes")
         plt.tight_layout()
         plt.savefig(path)
         plt.close()
 
+        print(f"✅ English-only graph generated: {path}")
         return path
