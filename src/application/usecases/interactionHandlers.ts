@@ -21,35 +21,33 @@ export const setupInteractionHandlers = (client: Client) => {
     }
 
     if (interaction.commandName === "graph") {
-      const month = new Date().toISOString().slice(0, 7);
-
       try {
-        await interaction.deferReply({ ephemeral: false });
+        await interaction.deferReply();
 
+        const month = new Date().toISOString().slice(0, 7);
         console.log(`📊 Generating graph for ${month}`);
+
         const result = await generateGraph(month);
 
         if (result.status === "success" && result.file) {
+          const attachment = new AttachmentBuilder(result.file);
           await interaction.editReply({
             content: `📊 ${month} の投票結果グラフはこちらです！`,
-            files: [result.file],
+            files: [attachment],
           });
         } else {
-          const message =
-            result.message && result.message.length > 1800
-              ? result.message.slice(0, 1800) + "…(省略)"
-              : result.message ?? "不明なエラー";
-          await interaction.editReply(`⚠️ グラフ生成エラー:\n${message}`);
+          await interaction.editReply(
+            `⚠️ グラフ生成エラー: ${result.message || "原因不明"}`
+          );
         }
       } catch (err) {
         console.error("❌ /graph 実行エラー:", err);
-
         try {
           await interaction.editReply(
             "❌ グラフ生成中にエラーが発生しました。"
           );
-        } catch (nestedErr) {
-          console.error("⚠️ Interaction reply failed:", nestedErr);
+        } catch {
+          console.warn("⚠️ Interaction already acknowledged, skipping reply.");
         }
       }
     }
