@@ -1,7 +1,6 @@
 import { Client, Interaction, AttachmentBuilder } from "discord.js";
 import { createPoll } from "./createPoll.js";
 import { generateGraph } from "../../analytics/pythonExecutor.js";
-import fs from "fs";
 
 export const setupInteractionHandlers = (client: Client) => {
   client.on("interactionCreate", async (interaction: Interaction) => {
@@ -22,17 +21,15 @@ export const setupInteractionHandlers = (client: Client) => {
     }
 
     if (interaction.commandName === "graph") {
-      await interaction.deferReply();
-
       try {
+        await interaction.deferReply();
+
         const month = new Date().toISOString().slice(0, 7);
+        console.log(`📊 Generating graph for ${month}`);
+
         const result = await generateGraph(month);
 
-        if (
-          result.status === "success" &&
-          result.file &&
-          fs.existsSync(result.file)
-        ) {
+        if (result.status === "success" && result.file) {
           const attachment = new AttachmentBuilder(result.file);
           await interaction.editReply({
             content: `📊 ${month} の投票結果グラフはこちらです！`,
@@ -54,12 +51,10 @@ export const setupInteractionHandlers = (client: Client) => {
               "❌ グラフ生成中にエラーが発生しました。"
             );
           } else {
-            await interaction.followUp(
-              "❌ グラフ生成中にエラーが発生しました。"
-            );
+            await interaction.reply("❌ グラフ生成中にエラーが発生しました。");
           }
-        } catch (editErr) {
-          console.error("⚠️ 応答送信中にエラー:", editErr);
+        } catch (nestedErr) {
+          console.error("⚠️ Interaction reply failed:", nestedErr);
         }
       }
     }
