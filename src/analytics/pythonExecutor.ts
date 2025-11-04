@@ -9,9 +9,7 @@ export const generateGraph = async (
   month: string
 ): Promise<{ status: string; file?: string; message?: string }> => {
   return new Promise((resolve) => {
-    const projectRoot = path.resolve(
-      "/Users/shuichikawa/Desktop/DiscordPollBot"
-    );
+    const projectRoot = path.resolve(__dirname, "../../../");
     const scriptPath = path.join(
       projectRoot,
       "src/analytics/interfaces/cli_entrypoint.py"
