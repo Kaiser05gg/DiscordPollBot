@@ -9,11 +9,13 @@ export const generateGraph = async (
   month: string
 ): Promise<{ status: string; file?: string; message?: string }> => {
   return new Promise((resolve) => {
-    const projectRoot = path.resolve(__dirname, "../../../");
+    const projectRoot = path.resolve("/usr/src/app");
     const scriptPath = path.join(
       projectRoot,
       "src/analytics/interfaces/cli_entrypoint.py"
     );
+
+    console.log("📊 Python実行パス:", scriptPath);
 
     const py = spawn("python3", [scriptPath, month], {
       cwd: projectRoot,
