@@ -21,15 +21,19 @@ export const setupInteractionHandlers = (client: Client) => {
     }
 
     if (interaction.commandName === "graph") {
+      // ✅ まずは絶対に3秒以内に deferReply() を送る
       try {
         await interaction.deferReply({ ephemeral: false });
       } catch (err) {
         console.error("⚠️ deferReply失敗:", err);
-        return;
+        return; // ここで止めないと Unknown interaction 確定
       }
 
+      // ✅ deferReply 成功後にのみ重い処理を実行
       try {
         const month = new Date().toISOString().slice(0, 7);
+        console.log("📊 グラフ生成開始:", month);
+
         const result = await generateGraph(month);
 
         if (result.status === "success" && result.file) {
@@ -47,6 +51,7 @@ export const setupInteractionHandlers = (client: Client) => {
       } catch (err) {
         console.error("❌ /graph 実行エラー:", err);
 
+        // ✅ 二重応答を防ぐ
         if (interaction.deferred || interaction.replied) {
           try {
             await interaction.editReply(
@@ -54,7 +59,7 @@ export const setupInteractionHandlers = (client: Client) => {
             );
           } catch {
             console.warn(
-              "⚠️ Interaction already acknowledged, skipping reply."
+              "⚠️ Interaction already acknowledged, skipping editReply."
             );
           }
         }
