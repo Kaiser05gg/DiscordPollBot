@@ -22,24 +22,22 @@ export const setupInteractionHandlers = (client: Client) => {
     }
 
     if (interaction.commandName === "graph") {
-      try {
-        await interaction.deferReply();
+      await interaction.deferReply();
 
+      try {
         const month = new Date().toISOString().slice(0, 7);
         const result = await generateGraph(month);
 
-        if (result.status === "success" && result.file) {
-          if (fs.existsSync(result.file)) {
-            const attachment = new AttachmentBuilder(result.file);
-            await interaction.editReply({
-              content: `📊 ${month} の投票結果グラフはこちらです！`,
-              files: [attachment],
-            });
-          } else {
-            await interaction.editReply(
-              "⚠️ グラフファイルが見つかりませんでした。"
-            );
-          }
+        if (
+          result.status === "success" &&
+          result.file &&
+          fs.existsSync(result.file)
+        ) {
+          const attachment = new AttachmentBuilder(result.file);
+          await interaction.editReply({
+            content: `📊 ${month} の投票結果グラフはこちらです！`,
+            files: [attachment],
+          });
         } else {
           const message =
             result.message && result.message.length > 1800
@@ -49,7 +47,20 @@ export const setupInteractionHandlers = (client: Client) => {
         }
       } catch (err) {
         console.error("❌ /graph 実行エラー:", err);
-        await interaction.editReply("❌ グラフ生成中にエラーが発生しました。");
+
+        try {
+          if (interaction.deferred || interaction.replied) {
+            await interaction.editReply(
+              "❌ グラフ生成中にエラーが発生しました。"
+            );
+          } else {
+            await interaction.followUp(
+              "❌ グラフ生成中にエラーが発生しました。"
+            );
+          }
+        } catch (editErr) {
+          console.error("⚠️ 応答送信中にエラー:", editErr);
+        }
       }
     }
   });
