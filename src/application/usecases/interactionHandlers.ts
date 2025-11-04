@@ -21,18 +21,20 @@ export const setupInteractionHandlers = (client: Client) => {
     }
 
     if (interaction.commandName === "graph") {
-      await interaction.reply(
-        "📊 グラフ生成中です。完了したらここに投稿します！"
-      );
+      try {
+        // ✅ すぐ返信してDiscordの3秒制限をクリア
+        await interaction.reply(
+          "📊 グラフ生成中です。完了したらここに投稿します！"
+        );
 
-      (async () => {
-        try {
+        // ✅ 非同期でPython処理を別スレッド的に実行
+        (async () => {
           const month = new Date().toISOString().slice(0, 7);
           const result = await generateGraph(month);
 
           if (result.status === "success" && result.file) {
             await interaction.followUp({
-              content: `✅ ${month} の投票結果グラフが完成しました！`,
+              content: `✅ ${month} の投票結果グラフです！`,
               files: [{ attachment: result.file }],
             });
           } else {
@@ -42,19 +44,11 @@ export const setupInteractionHandlers = (client: Client) => {
               }`,
             });
           }
-        } catch (err) {
-          console.error("❌ /graph 実行エラー:", err);
-          try {
-            await interaction.followUp(
-              "❌ グラフ生成中にエラーが発生しました。"
-            );
-          } catch {
-            console.warn(
-              "⚠️ Interaction already acknowledged, skipping followUp."
-            );
-          }
-        }
-      })();
+        })();
+      } catch (err) {
+        console.error("❌ /graph 実行エラー:", err);
+        // すでにreply済みならここでは何もしない
+      }
     }
   });
 };
