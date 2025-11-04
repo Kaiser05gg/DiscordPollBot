@@ -32,7 +32,10 @@ export const runPythonScript = async (
       }
 
       try {
-        const result = JSON.parse(stdoutData);
+        const match = stdoutData.match(/\{[\s\S]*\}$/m);
+        if (!match) throw new Error("No JSON found in Python output");
+
+        const result = JSON.parse(match[0]);
         if (result.status === "success") {
           console.log("✅ Python グラフ生成成功:", result.file);
           resolve(result);
@@ -40,9 +43,9 @@ export const runPythonScript = async (
           console.error("❌ Python 内部エラー:", result.message);
           resolve(result);
         }
-      } catch {
-        console.error("⚠️ JSON パース失敗:", stdoutData.slice(0, 200));
-        resolve({ status: "error", message: "JSON parse error" });
+      } catch (err) {
+        console.error("⚠️ JSON パース失敗:", stdoutData.slice(-200));
+        resolve({ status: "error", message: String(err) });
       }
     });
   });
