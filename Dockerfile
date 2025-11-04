@@ -26,6 +26,7 @@ ENV PYTHONPATH="/usr/local/lib/python3.11/site-packages"
 
 COPY --from=builder /usr/src/app/dist ./dist
 COPY --from=builder /usr/src/app/src/analytics ./analytics
+COPY firebase-key.json /usr/src/firebase-key.json
 
 EXPOSE 3000
 CMD ["node", "dist/index.js"]
