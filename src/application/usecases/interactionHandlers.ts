@@ -23,7 +23,12 @@ export const setupInteractionHandlers = (client: Client) => {
     if (interaction.commandName === "graph") {
       try {
         await interaction.deferReply({ ephemeral: false });
+      } catch (err) {
+        console.error("⚠️ deferReply失敗:", err);
+        return;
+      }
 
+      try {
         const month = new Date().toISOString().slice(0, 7);
         const result = await generateGraph(month);
 
@@ -43,14 +48,16 @@ export const setupInteractionHandlers = (client: Client) => {
         console.error("❌ /graph 実行エラー:", err);
 
         if (interaction.deferred || interaction.replied) {
-          console.warn("⚠️ Interaction already acknowledged, skipping reply.");
-          return;
+          try {
+            await interaction.editReply(
+              "❌ グラフ生成中にエラーが発生しました。"
+            );
+          } catch {
+            console.warn(
+              "⚠️ Interaction already acknowledged, skipping reply."
+            );
+          }
         }
-
-        await interaction.reply({
-          content: "❌ グラフ生成中にエラーが発生しました。",
-          ephemeral: true,
-        });
       }
     }
   });
