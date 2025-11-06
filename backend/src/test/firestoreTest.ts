@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { savePollResult } from "src/infrastructure/firebase/savePollResult";
+import { savePollResult } from "../infrastructure/firebase/savePollResult";
 
 (async () => {
   const testData = {

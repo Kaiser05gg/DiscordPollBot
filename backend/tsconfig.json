@@ -6,16 +6,19 @@
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "moduleDetection": "force",
-    "outDir": "./dist",
+    "outDir": "dist",
     "strict": true,
     "skipLibCheck": true,
     "typeRoots": [
-      "./src/types",
-      "./node_modules/@types"
+      "Backend/src/types",
+      "node_modules/@types"
     ],
-    "baseUrl": "."
+    "baseUrl": ""
   },
   "include": [
     "src/**/*"
-  ]
+  ],
+  "exclude": [
+    "dist"
+  ],
 }
