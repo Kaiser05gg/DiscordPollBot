@@ -1,56 +1,53 @@
 import { db } from "./firebase.js";
-import { Timestamp } from "firebase-admin/firestore";
-import { PollResult } from "../../domain/pollResult.js";
 
 export const pollResultRepository = {
-  // 🔹 新規Pollデータを保存
-  async save(poll: PollResult): Promise<void> {
-    const docId = `${poll.voted_at.toISOString().split("T")[0]}_${Date.now()}`;
-    await db
-      .collection("poll_results")
-      .doc(docId)
-      .set({
-        question: poll.question,
-        results: poll.results,
-        top_option: poll.top_option,
-        voted_at: Timestamp.fromDate(poll.voted_at),
-      });
-    console.log(`✅ Firestoreに投票結果を保存しました: ${poll.question}`);
+  // ✅ Poll作成時（初期レコード作成）
+  async createPollResult({
+    messageId,
+    question,
+  }: {
+    messageId: string;
+    question: string;
+  }) {
+    const jst = new Date(Date.now() + 9 * 60 * 60 * 1000);
+    const jstDate = jst.toISOString().split("T")[0];
+    const safeQuestion = question.replace(/\s+/g, "_");
+    const docId = `${jstDate}_${safeQuestion}`; // ✅ 統一！
+
+    await db.collection("poll_results").doc(docId).set({
+      message_id: messageId,
+      question,
+      results: {},
+      top_option: "",
+      created_at: jst,
+    });
+
+    console.log(`🗳️ Firestoreに新規Pollを作成: ${docId}`);
   },
 
-  // 🔹 質問文で既存データを取得
-  async getByQuestion(question: string): Promise<PollResult | null> {
-    const snapshot = await db
-      .collection("poll_results")
-      .where("question", "==", question)
-      .limit(1)
-      .get();
-
-    if (snapshot.empty) return null;
-    return snapshot.docs[0].data() as PollResult;
-  },
-
-  // 🔹 結果を更新（得票数を上書き）
+  // ✅ 投票更新時（同じ日付＋質問名ドキュメントに上書き）
+  // ✅ 投票更新時
   async updateResult(
     question: string,
     results: Record<string, number>,
-    top_option: string
-  ): Promise<void> {
-    const snapshot = await db
-      .collection("poll_results")
-      .where("question", "==", question)
-      .limit(1)
-      .get();
+    topOption: string
+  ) {
+    const jst = new Date(Date.now() + 9 * 60 * 60 * 1000);
+    const jstDate = jst.toISOString().split("T")[0];
+    const safeQuestion = question.replace(/\s+/g, "_");
+    const docId = `${jstDate}_${safeQuestion}`; // ← ✅ 毎日ユニークなID生成（createと同じ
 
-    if (snapshot.empty) return;
+    const docRef = db.collection("poll_results").doc(docId);
 
-    const docRef = snapshot.docs[0].ref;
-    await docRef.update({
-      results,
-      top_option,
-      voted_at: Timestamp.fromDate(new Date()),
-    });
+    await docRef.set(
+      {
+        results,
+        top_option: topOption,
+        updated_at: jst,
+      },
+      { merge: true }
+    );
 
-    console.log(`📊 Firestore更新: ${question} の集計データを更新しました`);
+    console.log(`📊 Firestore更新完了: ${docId}`);
   },
 };

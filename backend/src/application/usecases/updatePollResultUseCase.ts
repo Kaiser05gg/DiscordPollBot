@@ -1,27 +1,46 @@
 import { pollResultRepository } from "../../infrastructure/firebase/pollResultRepository.js";
 
 /**
- * @param question
- * @param selectedOption
- * @param delta
+ * Discord Pollの最新状態をFirestoreに保存（全体再集計型）
+ * @param poll Discord.jsのPollオブジェクト
  */
-export const updatePollResultUseCase = async (
-  question: string,
-  selectedOption: string,
-  delta: number = 1
-) => {
-  const existing = await pollResultRepository.getByQuestion(question);
-  if (!existing) {
-    console.warn("⚠️ Firestoreに対象の質問が見つかりません:", question);
-    return;
+export const updatePollResultUseCase = async (poll: any) => {
+  if (!poll) return;
+
+  console.log("🧩 Pollデータ構造確認:", JSON.stringify(poll, null, 2));
+  console.log("🧩 poll.answers =", poll.answers);
+
+  const newResults: Record<string, number> = {};
+
+  // Discord.js v14.17構造対応：poll.answers は Collection(Map)
+  try {
+    poll.answers.forEach((answer: any) => {
+      const key = answer?.text ?? "不明";
+      const value =
+        typeof answer?.voteCount === "number" ? answer.voteCount : 0;
+      newResults[key] = value;
+    });
+  } catch (err) {
+    console.error("❌ poll.answers の処理中にエラー:", err);
   }
 
-  const newResults = { ...existing.results };
-  newResults[selectedOption] = (newResults[selectedOption] || 0) + delta;
-  if (newResults[selectedOption] < 0) newResults[selectedOption] = 0;
+  // undefinedキーを削除（Firestore安全化）
+  const filteredResults = Object.fromEntries(
+    Object.entries(newResults).filter(([key]) => key && key !== "undefined")
+  );
 
-  const sorted = Object.entries(newResults).sort((a, b) => b[1] - a[1]);
+  // 最多得票の選択肢を算出
+  const sorted = Object.entries(filteredResults).sort((a, b) => b[1] - a[1]);
   const topOption = sorted[0]?.[0] ?? "なし";
 
-  await pollResultRepository.updateResult(question, newResults, topOption);
+  console.log(
+    `📊 Firestore更新: ${poll.question?.text} の集計データを更新します`
+  );
+  await pollResultRepository.updateResult(
+    poll.question?.text ?? "不明な質問",
+    filteredResults,
+    topOption
+  );
+
+  console.log(`📊 Firestore更新完了: ${poll.question?.text}`);
 };

@@ -1,14 +1,12 @@
-// src/application/usecases/createPoll.ts
 import { Client } from "discord.js";
-import { pollResultRepository } from "../../infrastructure/firebase/pollResultRepository.js"; // ✅ 変更
-import { savePollResultUseCase } from "./savePollResultUseCase.js"; // ✅ 投票データ保存用UseCase
+import { pollResultRepository } from "../../infrastructure/firebase/pollResultRepository.js";
 
 export const createPoll = async (client: Client, channelId: string) => {
   const channel = await client.channels.fetch(channelId);
   if (!channel?.isTextBased())
     throw new Error("❌ 指定チャンネルがテキストチャンネルではありません");
 
-  // ✅ DiscordにPollを送信
+  //  DiscordにPollを送信
   const message = await channel.send({
     poll: {
       question: { text: "本日の VALORANT" },
@@ -28,13 +26,12 @@ export const createPoll = async (client: Client, channelId: string) => {
 
   console.log("✅ 投票をDiscordに送信しました");
 
-  // ✅ Firestoreに初期レコードを保存
-  await savePollResultUseCase({
+  await pollResultRepository.createPollResult({
+    messageId: message.id,
     question: "本日の VALORANT",
-    results: {}, // ← まだ投票結果なし
-    top_option: "",
-    voted_at: new Date(),
   });
 
-  console.log("💾 Firestoreに初期投票データを保存しました");
+  console.log(
+    `💾 Firestoreに新規投票ドキュメントを作成しました (ID: ${message.id})`
+  );
 };

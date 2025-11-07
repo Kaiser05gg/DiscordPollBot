@@ -10,15 +10,16 @@
     "strict": true,
     "skipLibCheck": true,
     "typeRoots": [
-      "Backend/src/types",
-      "node_modules/@types"
+      "./src/types",
+      "./node_modules/@types"
     ],
-    "baseUrl": ""
+    "baseUrl": "./src"
   },
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "src/types/**/*"
   ],
   "exclude": [
     "dist"
-  ],
+  ]
 }

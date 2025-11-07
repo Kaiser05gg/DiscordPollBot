@@ -1,3 +1,7 @@
+import dotenv from "dotenv";
+import path from "path";
+dotenv.config({ path: path.resolve("backend/.env") });
+
 import { initializeApp, cert } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 
@@ -12,3 +16,4 @@ initializeApp({
 });
 
 export const db = getFirestore();
+console.log("✅ Firebase接続成功");
