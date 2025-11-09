@@ -12,4 +12,3 @@ export function startExpressServer() {
     console.log(`Express server running on port ${PORT}`);
   });
 }
-

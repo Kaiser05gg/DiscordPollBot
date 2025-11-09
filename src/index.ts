@@ -9,7 +9,7 @@ import { setupInteractionHandlers } from "./application/usecases/interactionHand
 
 try {
   startExpressServer();
-
+  setupInteractionHandlers(client);
   client.once("ready", async () => {
     console.log(`✅ Logged in as ${client.user?.tag}`);
     await registerCommands(client);

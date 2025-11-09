@@ -1,5 +1,9 @@
 import { spawn } from "child_process";
+import fs from "fs";
 import path from "path";
+
+const venvPath = path.join("/usr/src/app", "analytics/venv/bin/python");
+const pythonPath = fs.existsSync(venvPath) ? venvPath : "python3";
 
 export const runPythonScript = async (
   month: string
@@ -12,9 +16,14 @@ export const runPythonScript = async (
       "analytics/interfaces/cli_entrypoint.py"
     );
 
-    console.log("📊 実行パス:", scriptPath);
+    // ✅ ここを修正（python3 → venv内のpythonに置き換え）
+    const pythonPath = path.join(projectRoot, "analytics/venv/bin/python");
 
-    const py = spawn("python3", [scriptPath, month], {
+    console.log("📊 実行パス:", scriptPath);
+    console.log("🐍 使用Python:", pythonPath);
+
+    // ✅ pythonPath を使ってspawn
+    const py = spawn(pythonPath, [scriptPath, month], {
       cwd: projectRoot,
     });
 
@@ -47,6 +56,11 @@ export const runPythonScript = async (
         console.error("⚠️ JSON パース失敗:", stdoutData.slice(-200));
         resolve({ status: "error", message: String(err) });
       }
+    });
+
+    py.on("error", (err) => {
+      console.error("💥 Python spawn エラー:", err);
+      resolve({ status: "error", message: err.message });
     });
   });
 };
