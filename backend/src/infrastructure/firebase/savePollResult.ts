@@ -1,13 +1,10 @@
 import { db } from "./firebase.js";
 import { Timestamp } from "firebase-admin/firestore";
+import { PollResult } from "../../domain/pollResult";
 
-interface PollResult {
-  question: string;
-  results: Record<string, number>;
-  voted_at: Date;
-}
+type SavePollResultDTO = Pick<PollResult, "question" | "results" | "voted_at">;
 
-export const savePollResult = async (data: PollResult) => {
+export const savePollResult = async (data: SavePollResultDTO) => {
   const jstNow = new Date(data.voted_at.getTime() + 9 * 60 * 60 * 1000);
   const jstDate = jstNow.toISOString().split("T")[0];
   const docId = `${jstDate}_${Date.now()}`;

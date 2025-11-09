@@ -12,7 +12,7 @@ export const pollResultRepository = {
     const jst = new Date(Date.now() + 9 * 60 * 60 * 1000);
     const jstDate = jst.toISOString().split("T")[0];
     const safeQuestion = question.replace(/\s+/g, "_");
-    const docId = `${jstDate}_${safeQuestion}`; // ✅ 統一！
+    const docId = `${jstDate}_${safeQuestion}`;
 
     await db.collection("poll_results").doc(docId).set({
       message_id: messageId,
@@ -25,8 +25,8 @@ export const pollResultRepository = {
     console.log(`🗳️ Firestoreに新規Pollを作成: ${docId}`);
   },
 
-  // ✅ 投票更新時（同じ日付＋質問名ドキュメントに上書き）
-  // ✅ 投票更新時
+  //  投票更新時（同じ日付＋質問名ドキュメントに上書き）
+  // 投票更新時
   async updateResult(
     question: string,
     results: Record<string, number>,
@@ -35,7 +35,7 @@ export const pollResultRepository = {
     const jst = new Date(Date.now() + 9 * 60 * 60 * 1000);
     const jstDate = jst.toISOString().split("T")[0];
     const safeQuestion = question.replace(/\s+/g, "_");
-    const docId = `${jstDate}_${safeQuestion}`; // ← ✅ 毎日ユニークなID生成（createと同じ
+    const docId = `${jstDate}_${safeQuestion}`;
 
     const docRef = db.collection("poll_results").doc(docId);
 
