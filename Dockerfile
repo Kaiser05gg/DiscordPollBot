@@ -7,9 +7,9 @@ RUN npm run build
 
 FROM python:3.11-slim AS pydeps
 WORKDIR /usr/src/app
-COPY requirements.txt .
-RUN apt-get update && apt-get install -y fonts-noto-cjk && rm -rf /var/lib/apt/lists/*
+COPY backend/requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
+RUN apt-get update && apt-get install -y fonts-noto-cjk && rm -rf /var/lib/apt/lists/*
 
 FROM node:20-bookworm-slim
 WORKDIR /usr/src/app
