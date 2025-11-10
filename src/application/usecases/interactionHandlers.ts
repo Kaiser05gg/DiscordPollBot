@@ -24,11 +24,15 @@ export const setupInteractionHandlers = (client: Client) => {
 
     if (interaction.commandName === "graph") {
       try {
-        // 🔸 Discordへ即時応答（3秒ルール完全回避）
-        await interaction.reply({
-          content: "⏳ グラフ生成を開始しました。しばらくお待ちください…",
-          ephemeral: false,
-        });
+        // 🔸 Discordに即応答（tryで安全に包む）
+        try {
+          await interaction.reply({
+            content: "⏳ グラフ生成を開始しました。しばらくお待ちください…",
+            ephemeral: false,
+          });
+        } catch (e) {
+          console.warn("⚠️ 初期reply失敗（期限切れまたは二重呼び出し）:", e);
+        }
 
         const monthOption = interaction.options.getInteger("month");
         const now = new Date();
@@ -36,30 +40,33 @@ export const setupInteractionHandlers = (client: Client) => {
           ? `${now.getFullYear()}-${String(monthOption).padStart(2, "0")}`
           : now.toISOString().slice(0, 7);
 
+        // --- Python呼び出し ---
         const result = await generateGraph(targetMonth);
 
+        // --- 結果表示 ---
         if (result.status === "success" && result.file) {
           await interaction.editReply({
             content: `✅ ${targetMonth} の投票結果グラフです！`,
             files: [{ attachment: result.file }],
           });
-          return;
-        }
+        } else {
+          const message = result.message?.includes("No poll data found")
+            ? `⚠️ ${targetMonth} のデータが存在しませんでした。`
+            : `⚠️ グラフ生成に失敗しました。\n${
+                result.message ?? "不明なエラー"
+              }`;
 
-        const message = result.message?.includes("No poll data found")
-          ? `⚠️ ${targetMonth} のデータが存在しませんでした。`
-          : `⚠️ グラフ生成に失敗しました。\n${
-              result.message ?? "不明なエラー"
-            }`;
-        await interaction.editReply({ content: message });
+          await interaction.editReply({ content: message });
+        }
       } catch (err) {
         console.error("❌ /graph 実行エラー:", err);
         try {
-          await interaction.editReply({
+          await interaction.followUp({
             content: "⚠️ グラフ生成中にエラーが発生しました。",
+            ephemeral: true,
           });
-        } catch (nestedErr) {
-          console.warn("⚠️ Discord応答失敗:", nestedErr);
+        } catch (nested) {
+          console.warn("⚠️ Discord応答失敗:", nested);
         }
       }
     }

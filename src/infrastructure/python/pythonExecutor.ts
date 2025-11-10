@@ -2,8 +2,11 @@ import { spawn } from "child_process";
 import fs from "fs";
 import path from "path";
 
-const venvPath = path.join("/usr/src/app", "analytics/venv/bin/python");
-const pythonPath = fs.existsSync(venvPath) ? venvPath : "python3";
+// src/analytics にある venv を検出
+const venvPath = path.join("/usr/src/app", "src/analytics/venv/bin/python");
+
+// venv が存在すればそれを使う、なければグローバル python3
+const pythonExec = fs.existsSync(venvPath) ? venvPath : "python3";
 
 export const runPythonScript = async (
   month: string
@@ -13,17 +16,13 @@ export const runPythonScript = async (
 
     const scriptPath = path.join(
       projectRoot,
-      "analytics/interfaces/cli_entrypoint.py"
+      "src/analytics/interfaces/cli_entrypoint.py"
     );
 
-    // ✅ ここを修正（python3 → venv内のpythonに置き換え）
-    const pythonPath = path.join(projectRoot, "analytics/venv/bin/python");
-
     console.log("📊 実行パス:", scriptPath);
-    console.log("🐍 使用Python:", pythonPath);
+    console.log("🐍 使用Python:", pythonExec);
 
-    // ✅ pythonPath を使ってspawn
-    const py = spawn(pythonPath, [scriptPath, month], {
+    const py = spawn(pythonExec, [scriptPath, month], {
       cwd: projectRoot,
     });
 
