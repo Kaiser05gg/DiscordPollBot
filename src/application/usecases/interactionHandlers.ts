@@ -24,10 +24,8 @@ export const setupInteractionHandlers = (client: Client) => {
 
     if (interaction.commandName === "graph") {
       try {
-        // 🟢 deferReply は必ず最初に一回だけ呼ぶ
-        if (!interaction.deferred && !interaction.replied) {
-          await interaction.deferReply();
-        }
+        // 🟢 deferReply は「最初に」「無条件で」呼ぶ（3秒ルール完全回避）
+        await interaction.deferReply({ ephemeral: false });
 
         const monthOption = interaction.options.getInteger("month");
         const now = new Date();
@@ -57,17 +55,9 @@ export const setupInteractionHandlers = (client: Client) => {
         console.error("❌ /graph 実行エラー:", err);
 
         try {
-          // ✅ ここがポイント：defer済みかどうかで切り替え
-          if (interaction.deferred || interaction.replied) {
-            await interaction.editReply({
-              content: "⚠️ グラフ生成中にエラーが発生しました。",
-            });
-          } else {
-            await interaction.reply({
-              content: "⚠️ グラフ生成に失敗しました（初期応答エラー）",
-              ephemeral: true,
-            });
-          }
+          await interaction.editReply({
+            content: "⚠️ グラフ生成中にエラーが発生しました。",
+          });
         } catch (nestedErr) {
           // 二重応答（40060）は握り潰す
           if (
