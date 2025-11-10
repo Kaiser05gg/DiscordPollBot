@@ -12,9 +12,20 @@ try {
   setupInteractionHandlers(client);
   client.once("ready", async () => {
     console.log(`✅ Logged in as ${client.user?.tag}`);
+
     await registerCommands(client);
     setupPollListeners(client);
     setupInteractionHandlers(client);
+
+    // ColdStart対策
+    try {
+      await fetch("https://discord.com/api/v10/users/@me", {
+        headers: { Authorization: `Bot ${process.env.DISCORD_TOKEN}` },
+      });
+      console.log("🔥 Discord API warm-up completed!");
+    } catch (err) {
+      console.warn("⚠️ Warm-up skipped:", err);
+    }
     setTimeout(() => {
       schedulePoll(client);
       console.log("⏰ Pollスケジューラーを起動しました");
