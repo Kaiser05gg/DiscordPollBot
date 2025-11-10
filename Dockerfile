@@ -30,7 +30,7 @@ ENV LD_LIBRARY_PATH="/usr/local/lib:/usr/lib/x86_64-linux-gnu:${LD_LIBRARY_PATH}
 ENV PYTHONPATH="/usr/local/lib/python3.11/site-packages"
 
 COPY --from=builder /usr/src/app/dist ./dist
-COPY --from=builder /usr/src/app/src/analytics ./analytics
+COPY --from=builder /usr/src/app/src/analytics ./src/analytics
 
 EXPOSE 3000
 
