@@ -24,26 +24,17 @@ export const setupInteractionHandlers = (client: Client) => {
 
     if (interaction.commandName === "graph") {
       try {
-        // 🟢 deferを即非同期で開始し、3秒以内にDiscordへ通知
-        const deferPromise = interaction
-          .deferReply({ ephemeral: false })
-          .catch((err) => {
-            console.warn(
-              "⚠️ deferReply失敗（タイムアウトまたは二重呼び出し）:",
-              err
-            );
-          });
+        // 🔸 Discordへ即時応答（3秒ルール完全回避）
+        await interaction.reply({
+          content: "⏳ グラフ生成を開始しました。しばらくお待ちください…",
+          ephemeral: false,
+        });
 
-        // ここではdefer完了を待たない
         const monthOption = interaction.options.getInteger("month");
         const now = new Date();
         const targetMonth = monthOption
           ? `${now.getFullYear()}-${String(monthOption).padStart(2, "0")}`
           : now.toISOString().slice(0, 7);
-
-        // 進捗メッセージを後で送るために少し待つ
-        await deferPromise; // deferが成功していればOK
-        await interaction.editReply(`📊 ${targetMonth} のグラフを生成中です…`);
 
         const result = await generateGraph(targetMonth);
 
@@ -63,30 +54,12 @@ export const setupInteractionHandlers = (client: Client) => {
         await interaction.editReply({ content: message });
       } catch (err) {
         console.error("❌ /graph 実行エラー:", err);
-
         try {
-          // deferが間に合わなかった場合のフォールバック
-          if (interaction.deferred || interaction.replied) {
-            await interaction.editReply({
-              content: "⚠️ グラフ生成中にエラーが発生しました。",
-            });
-          } else {
-            await interaction.reply({
-              content:
-                "⚠️ 応答がタイムアウトしました。もう一度お試しください。",
-              ephemeral: true,
-            });
-          }
+          await interaction.editReply({
+            content: "⚠️ グラフ生成中にエラーが発生しました。",
+          });
         } catch (nestedErr) {
-          if (
-            nestedErr instanceof Error &&
-            "code" in nestedErr &&
-            (nestedErr as any).code === 40060
-          ) {
-            console.warn("⚠️ 二重応答エラーを無視しました。");
-          } else {
-            console.warn("⚠️ Discord応答失敗:", nestedErr);
-          }
+          console.warn("⚠️ Discord応答失敗:", nestedErr);
         }
       }
     }
