@@ -6,7 +6,7 @@ export const createPoll = async (client: Client, channelId: string) => {
   if (!channel?.isTextBased())
     throw new Error("❌ 指定チャンネルがテキストチャンネルではありません");
 
-  // ✅ DiscordにPollを送信
+  // DiscordにPollを送信
   const message = await channel.send({
     poll: {
       question: { text: "本日の VALORANT" },
