@@ -16,10 +16,10 @@
     "baseUrl": "./src"
   },
   "include": [
-    "src/**/*",
-    "src/types/**/*"
+    "./src/**/*"
   ],
   "exclude": [
-    "dist"
+    "dist",
+    "node_modules"
   ]
 }

@@ -25,3 +25,10 @@ try {
 } catch (err) {
   console.error("❌ 起動時エラー:", err);
 }
+// Node.js全体の例外処理をキャッチしてBotが落ちないようにする
+process.on("unhandledRejection", (reason) => {
+  console.error("⚠️ Unhandled Promise Rejection:", reason);
+});
+process.on("uncaughtException", (err) => {
+  console.error("💥 Uncaught Exception:", err);
+});

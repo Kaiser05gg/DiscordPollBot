@@ -22,10 +22,13 @@ export const setupInteractionHandlers = (client: Client) => {
       }
     }
 
-    //graphコマンド
     if (interaction.commandName === "graph") {
       try {
-        await interaction.deferReply();
+        // 🟢 deferReply は必ず最初に一回だけ呼ぶ
+        if (!interaction.deferred && !interaction.replied) {
+          await interaction.deferReply();
+        }
+
         const monthOption = interaction.options.getInteger("month");
         const now = new Date();
         const targetMonth = monthOption
@@ -41,17 +44,42 @@ export const setupInteractionHandlers = (client: Client) => {
             content: `✅ ${targetMonth} の投票結果グラフです！`,
             files: [{ attachment: result.file }],
           });
-        } else {
-          const message = result.message?.includes("No poll data found")
-            ? `⚠️ ${targetMonth} のデータが存在しませんでした。`
-            : `⚠️ グラフ生成に失敗しました。\n${
-                result.message ?? "不明なエラー"
-              }`;
-          await interaction.editReply({ content: message });
+          return;
         }
+
+        const message = result.message?.includes("No poll data found")
+          ? `⚠️ ${targetMonth} のデータが存在しませんでした。`
+          : `⚠️ グラフ生成に失敗しました。\n${
+              result.message ?? "不明なエラー"
+            }`;
+        await interaction.editReply({ content: message });
       } catch (err) {
         console.error("❌ /graph 実行エラー:", err);
-        await interaction.editReply("⚠️ グラフ生成中にエラーが発生しました。");
+
+        try {
+          // ✅ ここがポイント：defer済みかどうかで切り替え
+          if (interaction.deferred || interaction.replied) {
+            await interaction.editReply({
+              content: "⚠️ グラフ生成中にエラーが発生しました。",
+            });
+          } else {
+            await interaction.reply({
+              content: "⚠️ グラフ生成に失敗しました（初期応答エラー）",
+              ephemeral: true,
+            });
+          }
+        } catch (nestedErr) {
+          // 二重応答（40060）は握り潰す
+          if (
+            nestedErr instanceof Error &&
+            "code" in nestedErr &&
+            (nestedErr as any).code === 40060
+          ) {
+            console.warn("⚠️ 二重応答エラーを無視しました。");
+          } else {
+            console.warn("⚠️ Discord応答失敗:", nestedErr);
+          }
+        }
       }
     }
   });
