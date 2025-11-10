@@ -24,12 +24,15 @@ export const setupInteractionHandlers = (client: Client) => {
 
     if (interaction.commandName === "graph") {
       try {
+        let replied = false; // ✅ 初期reply成否フラグ
+
         // 🔸 Discordに即応答（tryで安全に包む）
         try {
           await interaction.reply({
             content: "⏳ グラフ生成を開始しました。しばらくお待ちください…",
             ephemeral: false,
           });
+          replied = true; // ✅ reply成功フラグON
         } catch (e) {
           console.warn("⚠️ 初期reply失敗（期限切れまたは二重呼び出し）:", e);
         }
@@ -45,10 +48,18 @@ export const setupInteractionHandlers = (client: Client) => {
 
         // --- 結果表示 ---
         if (result.status === "success" && result.file) {
-          await interaction.editReply({
-            content: `✅ ${targetMonth} の投票結果グラフです！`,
-            files: [{ attachment: result.file }],
-          });
+          if (replied) {
+            await interaction.editReply({
+              content: `✅ ${targetMonth} の投票結果グラフです！`,
+              files: [{ attachment: result.file }],
+            });
+          } else {
+            // ✅ fallback: reply失敗時でもメッセージを返す
+            await interaction.followUp({
+              content: `✅ ${targetMonth} の投票結果グラフです！（遅延応答）`,
+              files: [{ attachment: result.file }],
+            });
+          }
         } else {
           const message = result.message?.includes("No poll data found")
             ? `⚠️ ${targetMonth} のデータが存在しませんでした。`
@@ -56,7 +67,11 @@ export const setupInteractionHandlers = (client: Client) => {
                 result.message ?? "不明なエラー"
               }`;
 
-          await interaction.editReply({ content: message });
+          if (replied) {
+            await interaction.editReply({ content: message });
+          } else {
+            await interaction.followUp({ content: message });
+          }
         }
       } catch (err) {
         console.error("❌ /graph 実行エラー:", err);
