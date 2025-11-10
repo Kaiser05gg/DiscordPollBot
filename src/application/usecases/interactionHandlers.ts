@@ -24,15 +24,25 @@ export const setupInteractionHandlers = (client: Client) => {
 
     if (interaction.commandName === "graph") {
       try {
-        // 🟢 deferReply は「最初に」「無条件で」呼ぶ（3秒ルール完全回避）
-        await interaction.deferReply({ ephemeral: false });
+        // 🟢 deferを即非同期で開始し、3秒以内にDiscordへ通知
+        const deferPromise = interaction
+          .deferReply({ ephemeral: false })
+          .catch((err) => {
+            console.warn(
+              "⚠️ deferReply失敗（タイムアウトまたは二重呼び出し）:",
+              err
+            );
+          });
 
+        // ここではdefer完了を待たない
         const monthOption = interaction.options.getInteger("month");
         const now = new Date();
         const targetMonth = monthOption
           ? `${now.getFullYear()}-${String(monthOption).padStart(2, "0")}`
           : now.toISOString().slice(0, 7);
 
+        // 進捗メッセージを後で送るために少し待つ
+        await deferPromise; // deferが成功していればOK
         await interaction.editReply(`📊 ${targetMonth} のグラフを生成中です…`);
 
         const result = await generateGraph(targetMonth);
@@ -55,11 +65,19 @@ export const setupInteractionHandlers = (client: Client) => {
         console.error("❌ /graph 実行エラー:", err);
 
         try {
-          await interaction.editReply({
-            content: "⚠️ グラフ生成中にエラーが発生しました。",
-          });
+          // deferが間に合わなかった場合のフォールバック
+          if (interaction.deferred || interaction.replied) {
+            await interaction.editReply({
+              content: "⚠️ グラフ生成中にエラーが発生しました。",
+            });
+          } else {
+            await interaction.reply({
+              content:
+                "⚠️ 応答がタイムアウトしました。もう一度お試しください。",
+              ephemeral: true,
+            });
+          }
         } catch (nestedErr) {
-          // 二重応答（40060）は握り潰す
           if (
             nestedErr instanceof Error &&
             "code" in nestedErr &&
