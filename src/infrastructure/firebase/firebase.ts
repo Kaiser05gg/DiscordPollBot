@@ -1,6 +1,20 @@
 import dotenv from "dotenv";
-import path from "path";
 dotenv.config({ path: path.resolve("backend/.env") });
+import fs from "fs";
+import path from "path";
+
+const firebaseKeyEnv = process.env.FIREBASE_KEY;
+
+// Python側が使うfirebase-key.jsonを生成
+if (firebaseKeyEnv) {
+  const keyPath = path.resolve("/usr/src/app/firebase-key.json");
+  if (!fs.existsSync(keyPath)) {
+    fs.writeFileSync(keyPath, firebaseKeyEnv);
+    console.log("✅ firebase-key.json を自動生成しました");
+  }
+} else {
+  console.warn("⚠️ FIREBASE_KEY が環境変数に存在しません");
+}
 
 import { initializeApp, cert } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
