@@ -31,7 +31,14 @@ export const updatePollResultUseCase = async (poll: any) => {
 
   // 最多得票の選択肢を算出
   const sorted = Object.entries(filteredResults).sort((a, b) => b[1] - a[1]);
-  const topOption = sorted[0]?.[0] ?? "なし";
+  const allVotesZero =
+    Object.keys(filteredResults).length > 0 &&
+    Object.values(filteredResults).every((count) => count === 0);
+
+  const topOption = allVotesZero
+    ? "投票なし"
+    : Object.entries(filteredResults).sort((a, b) => b[1] - a[1])[0]?.[0] ??
+      "投票なし";
 
   console.log(
     `📊 Firestore更新: ${poll.question?.text} の集計データを更新します`
