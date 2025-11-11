@@ -7,6 +7,7 @@ export const schedulePoll = (client: Client) => {
   const channelId = process.env.CHANNEL_ID;
   if (!channelId) return console.error("❌ CHANNEL_ID 未設定");
 
+  // 毎日12:00にPoll作成
   cron.schedule("0 12 * * *", async () => {
     try {
       await createPoll(client, channelId);
@@ -15,6 +16,8 @@ export const schedulePoll = (client: Client) => {
       console.error("❌ 自動投票エラー:", err);
     }
   });
+
+  // 1分ごとの投票集計更新
   cron.schedule("* * * * *", async () => {
     try {
       const channel = await client.channels.fetch(channelId);
@@ -23,7 +26,12 @@ export const schedulePoll = (client: Client) => {
       const messages = await channel.messages.fetch({ limit: 10 });
       for (const msg of messages.values()) {
         if (!msg.poll) continue;
-        await updatePollResultUseCase(msg.poll);
+
+        const freshMessage = await channel.messages.fetch(msg.id);
+        const freshPoll = freshMessage.poll;
+        if (!freshPoll) continue;
+
+        await updatePollResultUseCase(freshPoll);
       }
 
       console.log("✅ 1分ごとのPoll結果反映完了");
