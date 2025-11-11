@@ -13,6 +13,7 @@ export const schedulePoll = (client: Client) => {
       // 🟩 createPollが返す message を受け取る
       const message = await createPoll(client, channelId);
       console.log("✅ JST12:00 定時投票を送信しました");
+
       // 🕒 Poll終了時刻を取得
       const expiresAt = message.poll?.expiresTimestamp;
       if (!expiresAt) {
