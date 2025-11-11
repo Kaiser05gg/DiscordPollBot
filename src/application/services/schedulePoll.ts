@@ -1,7 +1,7 @@
 import cron from "node-cron";
 import { Client } from "discord.js";
 import { createPoll } from "../usecases/createPoll.js";
-import { updatePollResultUseCase } from "../usecases/updatePollResultUseCase";
+import { updatePollResultUseCase } from "../usecases/updatePollResultUseCase.js";
 
 export const schedulePoll = (client: Client) => {
   const channelId = process.env.CHANNEL_ID;
