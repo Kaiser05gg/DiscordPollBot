@@ -20,6 +20,10 @@ const commands = [
       },
     ],
   },
+  {
+    name: "update",
+    description: "最新のPoll結果をFirestoreに手動で反映します",
+  },
 ];
 
 export const registerCommands = async (client?: Client) => {
@@ -31,7 +35,7 @@ export const registerCommands = async (client?: Client) => {
       { body: commands }
     );
     console.log(
-      "✅ スラッシュコマンド /poll・/graph を登録しました（ギルド限定）"
+      "✅ スラッシュコマンド /poll・/graph・/update を登録しました（ギルド限定）"
     );
   } catch (err) {
     console.error("❌ コマンド登録エラー:", err);

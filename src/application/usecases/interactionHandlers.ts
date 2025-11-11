@@ -1,6 +1,7 @@
 import { Client, Interaction } from "discord.js";
 import { createPoll } from "./createPoll.js";
 import { runPythonScript as generateGraph } from "../../infrastructure/python/pythonExecutor.js";
+import { updatePollResultUseCase } from "./updatePollResultUseCase.js";
 
 export const setupInteractionHandlers = (client: Client) => {
   client.on("interactionCreate", async (interaction: Interaction) => {
@@ -19,6 +20,38 @@ export const setupInteractionHandlers = (client: Client) => {
       } catch (err) {
         console.error("❌ /poll 実行エラー:", err);
         await interaction.editReply("⚠️ 投票の作成に失敗しました。");
+      }
+    }
+    if (interaction.commandName === "update") {
+      try {
+        // 🟩 応答タイムアウト防止
+        await interaction.deferReply({ ephemeral: true });
+
+        const channelId = process.env.CHANNEL_ID;
+        const channel = await client.channels.fetch(channelId!);
+        if (!channel?.isTextBased()) {
+          await interaction.editReply(
+            "❌ チャンネルがテキストチャンネルではありません。"
+          );
+          return;
+        }
+
+        // 最新メッセージからPollを探す
+        const messages = await channel.messages.fetch({ limit: 10 });
+        const pollMessage = messages.find((m) => m.poll);
+
+        if (!pollMessage || !pollMessage.poll) {
+          await interaction.editReply("⚠️ Pollが見つかりませんでした。");
+          return;
+        }
+
+        // Firestoreに反映
+        await updatePollResultUseCase(pollMessage.poll);
+
+        await interaction.editReply("✅ Poll結果をFirestoreに反映しました！");
+      } catch (err) {
+        console.error("❌ /update 実行エラー:", err);
+        await interaction.editReply(`⚠️ 更新に失敗しました: ${err}`);
       }
     }
 
