@@ -15,6 +15,8 @@ export const savePollToFirestore = async (pollData: PollData) => {
   const jstDate = jstNow.toISOString().split("T")[0];
   const docId = `${jstDate}_${Date.now()}`;
 
+  console.log("🔥 pollData.results:", pollData.results);
+
   const allVotesZero = Object.values(pollData.results).every(
     (count) => count === 0
   );
