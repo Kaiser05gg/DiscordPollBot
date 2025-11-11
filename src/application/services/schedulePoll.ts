@@ -1,6 +1,6 @@
 import cron from "node-cron";
 import { Client } from "discord.js";
-import { createPoll } from "../usecases/createPoll";
+import { createPoll } from "../usecases/createPoll.js";
 import { updatePollResultUseCase } from "../usecases/updatePollResultUseCase";
 
 export const schedulePoll = (client: Client) => {
