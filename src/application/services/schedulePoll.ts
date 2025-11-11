@@ -18,25 +18,27 @@ export const schedulePoll = (client: Client) => {
   });
 
   // 1分ごとの投票集計更新
-  cron.schedule("* * * * *", async () => {
-    try {
-      const channel = await client.channels.fetch(channelId);
-      if (!channel?.isTextBased()) return;
+  // cron.schedule("* * * * *", async () => {
+  //   async () => {
+  //     try {
+  //       const channel = await client.channels.fetch(channelId);
+  //       if (!channel?.isTextBased()) return;
 
-      const messages = await channel.messages.fetch({ limit: 10 });
-      for (const msg of messages.values()) {
-        if (!msg.poll) continue;
+  //       const messages = await channel.messages.fetch({ limit: 10 });
+  //       for (const msg of messages.values()) {
+  //         if (!msg.poll) continue;
 
-        const freshMessage = await channel.messages.fetch(msg.id);
-        const freshPoll = freshMessage.poll;
-        if (!freshPoll) continue;
+  //         const freshMessage = await channel.messages.fetch(msg.id);
+  //         const freshPoll = freshMessage.poll;
+  //         if (!freshPoll) continue;
 
-        await updatePollResultUseCase(freshPoll);
-      }
+  //         await updatePollResultUseCase(freshPoll);
+  //       }
 
-      console.log("✅ 1分ごとのPoll結果反映完了");
-    } catch (err) {
-      console.error("❌ Poll結果更新ジョブエラー:", err);
-    }
-  });
+  //       console.log("✅ 1分ごとのPoll結果反映完了");
+  //     } catch (err) {
+  //       console.error("❌ Poll結果更新ジョブエラー:", err);
+  //     }
+  //   };
+  // };
 };
