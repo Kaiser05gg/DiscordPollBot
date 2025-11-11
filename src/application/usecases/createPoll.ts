@@ -44,4 +44,5 @@ export const createPoll = async (client: Client, channelId: string) => {
   } catch (err) {
     console.error("❌ Firestore登録エラー:", err);
   }
+  return message;
 };
