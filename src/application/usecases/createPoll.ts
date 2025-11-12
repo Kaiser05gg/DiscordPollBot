@@ -18,7 +18,7 @@ export const createPoll = async (client: Client, channelId: string) => {
         { text: "時間未定" },
         { text: "不参加" },
       ],
-      duration: 720, // ✅ 12時間（分単位）
+      duration: 60 * 0.2,
       allowMultiselect: false,
       layoutType: 1,
     },
