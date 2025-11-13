@@ -1,6 +1,6 @@
 import express from "express";
 import { getFirestore } from "firebase-admin/firestore";
-import "../firebase/firebase.js";
+import "../../infrastructure/firebase/firebase.js";
 
 export function startExpressServer() {
   const app = express();
@@ -10,11 +10,11 @@ export function startExpressServer() {
     res.send("Express is running!");
   });
 
-  app.get("/api/polls", async (_req, res) => {
+  app.get("/api/poll_results", async (_req, res) => {
     try {
       const db = getFirestore();
       const snapshot = await db
-        .collection("pollResults")
+        .collection("poll_results")
         .orderBy("voted_at", "desc")
         .get();
       const polls = snapshot.docs.map((doc) => doc.data());
