@@ -25,7 +25,7 @@ export const createPoll = async (client: Client, channelId: string) => {
 
   console.log(`✅ 投票をDiscordに送信しました（ID: ${message.id}）`);
 
-  // ✅ Firestoreに初期ドキュメントを保存
+  //Firestoreに初期ドキュメントを保存
   try {
     await pollResultRepository.createPollResult({
       messageId: message.id,
