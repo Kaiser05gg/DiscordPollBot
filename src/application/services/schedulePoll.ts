@@ -1,8 +1,8 @@
 import cron from "node-cron";
 import { Client } from "discord.js";
-import { createPoll } from "../usecases/createPoll";
-import { updatePollResultUseCase } from "../usecases/updatePollResultUseCase";
-import { saveCronResult } from "../../infrastructure/firebase/saveCronResult";
+import { createPoll } from "../usecases/createPoll.js"; //ESM（"type": "module"）の鉄則パス指定には必ず .js を付ける
+import { updatePollResultUseCase } from "../usecases/updatePollResultUseCase.js";
+import { saveCronResult } from "../../infrastructure/firebase/saveCronResult.js";
 
 export const schedulePoll = (client: Client) => {
   const channelId = process.env.CHANNEL_ID;
