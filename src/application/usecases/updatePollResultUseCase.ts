@@ -1,8 +1,5 @@
-import { pollResultRepository } from "../../infrastructure/firebase/pollResultRepository.js";
-
 /**
- * Discord Pollの最新状態をFirestoreに保存（全体再集計型）
- * @param poll Discord.jsのPollオブジェクト
+ * Discord Pollの最新状態を解析し、Firestore保存用データを返す
  */
 export const updatePollResultUseCase = async (poll: any) => {
   if (!poll) return;
@@ -12,7 +9,7 @@ export const updatePollResultUseCase = async (poll: any) => {
 
   const newResults: Record<string, number> = {};
 
-  // Discord.js v14.17構造対応：poll.answers は Collection(Map)
+  // Discord.js v14.17対応：poll.answers は Collection(Map)
   try {
     poll.answers.forEach((answer: any) => {
       const key = answer?.text ?? "不明";
@@ -23,31 +20,22 @@ export const updatePollResultUseCase = async (poll: any) => {
   } catch (err) {
     console.error("❌ poll.answers の処理中にエラー:", err);
   }
-
-  // undefinedキーを削除（Firestore安全化）
   const filteredResults = Object.fromEntries(
     Object.entries(newResults).filter(([key]) => key && key !== "undefined")
   );
 
-  // 最多得票の選択肢を算出
-  const sorted = Object.entries(filteredResults).sort((a, b) => b[1] - a[1]);
-  const allVotesZero =
-    Object.keys(filteredResults).length > 0 &&
-    Object.values(filteredResults).every((count) => count === 0);
-
+  const allVotesZero = Object.values(filteredResults).every(
+    (count) => count === 0
+  );
   const topOption = allVotesZero
     ? "投票なし"
     : Object.entries(filteredResults).sort((a, b) => b[1] - a[1])[0]?.[0] ??
       "投票なし";
 
-  console.log(
-    `📊 Firestore更新: ${poll.question?.text} の集計データを更新します`
-  );
-  await pollResultRepository.updateResult(
-    poll.question?.text ?? "不明な質問",
-    filteredResults,
-    topOption
-  );
-
-  console.log(`📊 Firestore更新完了: ${poll.question?.text}`);
+  return {
+    question: poll.question?.text ?? "不明な質問",
+    results: filteredResults,
+    top_option: topOption,
+    voted_at: new Date(),
+  };
 };
