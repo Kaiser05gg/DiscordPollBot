@@ -1,29 +1,21 @@
-import dotenv from "dotenv";
 import path from "path";
-dotenv.config({ path: path.resolve("../.env") });
+import dotenv from "dotenv";
 
-import { initializeApp, cert } from "firebase-admin/app";
-import { getFirestore } from "firebase-admin/firestore";
-
-// 🔹 環境変数から直接JSONをパース
-const firebaseKey = process.env.FIREBASE_KEY;
-
-if (!firebaseKey) {
-  throw new Error("❌ FIREBASE_KEY が設定されていません");
-}
-
-let serviceAccount: any;
-try {
-  serviceAccount = JSON.parse(firebaseKey);
-} catch (err) {
-  console.error("❌ FIREBASE_KEY のJSONパースに失敗しました");
-  throw err;
-}
-
-// 🔹 Firebase初期化
-initializeApp({
-  credential: cert(serviceAccount),
+dotenv.config({
+  path: path.resolve(process.cwd(), ".env"),
 });
 
-export const db = getFirestore();
-console.log("✅ Firebase接続成功（ファイル書き出し不要）");
+import admin from "firebase-admin";
+
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert({
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+    }),
+  });
+}
+
+export const db = admin.firestore();
+console.log("✅ Firebase接続成功");
