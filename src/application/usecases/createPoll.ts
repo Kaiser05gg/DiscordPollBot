@@ -9,7 +9,7 @@ export const createPoll = async (client: Client, channelId: string) => {
   // DiscordにPollを送信
   const message = await channel.send({
     poll: {
-      question: { text: "本日の VALORANT" },
+      question: { text: "本日のVALORANT" },
       answers: [
         { text: "〜8時" },
         { text: "8〜9" },
@@ -30,7 +30,7 @@ export const createPoll = async (client: Client, channelId: string) => {
   try {
     await pollResultRepository.createPollResult({
       messageId: message.id,
-      question: "本日の VALORANT",
+      question: "本日のVALORANT",
     });
 
     console.log(
