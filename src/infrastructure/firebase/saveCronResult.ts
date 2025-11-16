@@ -1,10 +1,5 @@
-import admin from "firebase-admin";
-import { Timestamp } from "firebase-admin/firestore"; // ← ここを追加
-
-if (!admin.apps.length) {
-  admin.initializeApp();
-}
-const db = admin.firestore();
+import { db } from "./firebase.js";
+import { Timestamp } from "firebase-admin/firestore";
 
 export const saveCronResult = async (pollData: any) => {
   const now = new Date();
