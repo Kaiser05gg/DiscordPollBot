@@ -5,3 +5,9 @@ export interface PollResult {
   top_option: string | null; // 最多票の選択肢
   voted_at: Date; // 投票日
 }
+export interface PollData {
+  question: string;
+  results: Record<string, number>;
+  top_option: string;
+  voted_at: Date;
+}

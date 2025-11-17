@@ -2,7 +2,7 @@ import cron from "node-cron";
 import { Client } from "discord.js";
 import { createPoll } from "../usecases/createPoll.js"; //ESM（"type": "module"）の鉄則パス指定には必ず .js を付ける
 import { updatePollResultUseCase } from "../usecases/updatePollResultUseCase.js";
-import { saveCronResult } from "../../infrastructure/firebase/saveCronResult.js";
+import { pollResultRepository } from "infrastructure/firebase/pollResultRepository.js";
 
 export const schedulePoll = (client: Client) => {
   const channelId = process.env.CHANNEL_ID;
@@ -43,7 +43,15 @@ export const schedulePoll = (client: Client) => {
             return;
           }
           const pollData = await updatePollResultUseCase(freshPoll);
-          await saveCronResult(pollData);
+          if (!pollData) {
+            console.error("❌ pollData が取得できませんでした");
+            return;
+          }
+          await pollResultRepository.saveCron({
+            question: pollData.question,
+            results: pollData.results,
+            topOption: pollData.top_option,
+          });
 
           console.log(
             "📊 Poll終了→Firestoreへ最終結果を反映（cron）しました:",
