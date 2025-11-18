@@ -1,4 +1,5 @@
 export interface PollResult {
+  uuid: string;
   message_id: string;
   question: string; // 質問文
   results: Record<string, number>; // 各選択肢の得票数

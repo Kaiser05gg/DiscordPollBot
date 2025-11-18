@@ -1,4 +1,5 @@
 import { db } from "./firebase.js";
+import { v4 as uuidv4 } from "uuid";
 
 export const pollResultRepository = {
   //ドキュメント作成
@@ -14,16 +15,20 @@ export const pollResultRepository = {
     const safeQuestion = question.replace(/\s+/g, "_");
     const docId = `${jstDate}_${safeQuestion}`;
 
+    const uuid = uuidv4();
     await db.collection("poll_results").doc(docId).set(
       {
+        uuid,
         message_id: messageId,
         question,
         created_at: jst,
       },
-      { merge: true } // ← フィールド上書き防止
+      { merge: true }
     );
 
     console.log(`🗳️ Firestore 親ドキュメント作成: ${docId}`);
+
+    return docId;
   },
 
   ///poll の保存（poll/latest）

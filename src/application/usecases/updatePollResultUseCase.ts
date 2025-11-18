@@ -44,12 +44,5 @@ export const updatePollResultUseCase = async (
     voted_at: new Date(),
   };
 
-  // Firestore に /poll/latest を保存
-  await pollResultRepository.savePoll({
-    question: result.question,
-    results: result.results,
-    votedAt: result.voted_at,
-  });
-
   return result;
 };
