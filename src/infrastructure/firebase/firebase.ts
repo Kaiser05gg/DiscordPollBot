@@ -1,16 +1,10 @@
-import path from "path";
 import dotenv from "dotenv";
-dotenv.config({ path: path.resolve(process.cwd(), ".env") });
-
 import admin from "firebase-admin";
 
-if (!admin.apps.length) {
-  const jsonString = Buffer.from(
-    process.env.FIREBASE_PRIVATE_KEY_BASE64!,
-    "base64"
-  ).toString("utf-8");
+dotenv.config();
 
-  const serviceAccount = JSON.parse(jsonString);
+if (!admin.apps.length) {
+  const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT!);
 
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
@@ -18,4 +12,4 @@ if (!admin.apps.length) {
 }
 
 export const db = admin.firestore();
-console.log("🔥 Firebase接続成功");
+console.log("🔥 Firebase Admin 接続成功");
