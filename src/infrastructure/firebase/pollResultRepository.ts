@@ -47,6 +47,7 @@ export const pollResultRepository = {
     const docId = `${jstDate}_${safeQuestion}`;
 
     console.log(`🟦 /poll 保存開始: ${docId}`);
+    console.log("🟦 /poll 保存開始 docId:", docId);
 
     await db
       .collection("poll_results")
@@ -78,6 +79,7 @@ export const pollResultRepository = {
     const docId = `${jstDate}_${safeQuestion}`;
 
     console.log(`🟧 cron 保存開始: ${docId}`);
+    console.log("🟧 cron 保存開始 docId:", docId);
 
     await db
       .collection("poll_results")
