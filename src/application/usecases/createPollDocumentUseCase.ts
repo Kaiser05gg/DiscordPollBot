@@ -1,14 +1,20 @@
-import { PollResult } from "../../domain/pollResult.js";
 import { pollResultRepository } from "../../infrastructure/firebase/pollResultRepository.js";
 
-export const savePollResultUseCase = async (pollData: PollResult) => {
+export const createPollDocumentUseCase = async ({
+  message_id,
+  question,
+}: {
+  message_id: string;
+  question: string;
+}) => {
   try {
     await pollResultRepository.createPollResult({
-      messageId: pollData.message_id, // Firestoreの識別用
-      question: pollData.question,
+      messageId: message_id, // Firestoreの識別用
+      question,
     });
-    console.log("💾 Firestoreに初期投票データを保存しました");
+
+    console.log("📦 Firestore 初期投票ドキュメントを作成しました");
   } catch (err) {
-    console.error("❌ Firestore初期保存エラー:", err);
+    console.error("❌ Firestore 初期ドキュメント作成エラー:", err);
   }
 };

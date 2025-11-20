@@ -31,7 +31,6 @@ export const pollResultRepository = {
     return docId;
   },
 
-  ///poll の保存（poll/latest）
   async savePoll({
     question,
     results,
@@ -62,7 +61,7 @@ export const pollResultRepository = {
       );
     console.log(`🟦 /poll 保存完了: ${docId}`);
   },
-  // cron の保存（cron/latest）
+
   async saveCron({
     question,
     results,

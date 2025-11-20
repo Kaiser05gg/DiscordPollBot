@@ -2,10 +2,10 @@ import "dotenv/config";
 import "./infrastructure/firebase/firebase.js";
 import { startExpressServer } from "./interfaces/http/server.js";
 import { client } from "./infrastructure/discord/discordClient.js";
-import { registerCommands } from "./application/usecases/registerCommands.js";
+import { registerCommands } from "./application/services/registerCommands.js";
 import { schedulePoll } from "./application/services/schedulePoll.js";
-import { setupPollListeners } from "./application/usecases/setupPollListeners.js";
-import { setupInteractionHandlers } from "./application/usecases/interactionHandlers.js";
+import { setupPollListeners } from "./application/services/setupPollListeners.js";
+import { setupInteractionHandlers } from "./application/services/interactionHandlers.js";
 
 try {
   startExpressServer();

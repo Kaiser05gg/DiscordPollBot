@@ -1,5 +1,6 @@
 import { Client, Events } from "discord.js";
 import { updatePollResultUseCase } from "../usecases/updatePollResultUseCase.js";
+import { savePollResultUseCase } from "application/usecases/savePollResultUseCase.js";
 import { pollResultRepository } from "../../infrastructure/firebase/pollResultRepository.js";
 
 export const setupPollListeners = (client: Client) => {
@@ -24,11 +25,7 @@ export const setupPollListeners = (client: Client) => {
 
       // 🔥 Firestore 保存処理を追加
       if (pollData) {
-        await pollResultRepository.savePoll({
-          question: pollData.question,
-          results: pollData.results,
-          votedAt: pollData.voted_at,
-        });
+        await savePollResultUseCase(pollData);
       }
       console.log("🟦 Firestoreに保存完了 (MessagePollVoteAdd)");
     } catch (err) {
@@ -50,11 +47,7 @@ export const setupPollListeners = (client: Client) => {
 
       // 🔥 削除時も保存
       if (pollData) {
-        await pollResultRepository.savePoll({
-          question: pollData.question,
-          results: pollData.results,
-          votedAt: pollData.voted_at,
-        });
+        await savePollResultUseCase(pollData);
       }
       console.log("🟦 Firestoreに保存完了 (MessagePollVoteRemove)");
     } catch (err) {

@@ -1,48 +1,16 @@
-import { pollResultRepository } from "../../infrastructure/firebase/pollResultRepository.js";
 import { PollData } from "../../domain/pollResult.js";
+import { pollResultRepository } from "../../infrastructure/firebase/pollResultRepository.js";
 
-/**
- * Discord Pollの最新状態を解析し、Firestore保存用データを返す
- */
-export const updatePollResultUseCase = async (
-  poll: any
-): Promise<PollData | undefined> => {
-  if (!poll) return;
-
-  console.log("🧩 Pollデータ構造確認:", JSON.stringify(poll, null, 2));
-  console.log("🧩 poll.answers =", poll.answers);
-  const newResults: Record<string, number> = {};
-
+export const savePollResultUseCase = async (pollData: PollData) => {
   try {
-    poll.answers.forEach((answer: any) => {
-      const key = answer?.text ?? "不明";
-      const value =
-        typeof answer?.voteCount === "number" ? answer.voteCount : 0;
-      newResults[key] = value;
+    await pollResultRepository.savePoll({
+      question: pollData.question,
+      results: pollData.results,
+      votedAt: pollData.voted_at,
     });
+
+    console.log("🟦 [/poll] Firestore に poll/latest を保存しました");
   } catch (err) {
-    console.error("❌ poll.answers の処理中にエラー:", err);
+    console.error("❌ [/poll] Firestore 保存エラー:", err);
   }
-
-  const filteredResults = Object.fromEntries(
-    Object.entries(newResults).filter(([key]) => key && key !== "undefined")
-  );
-
-  const allVotesZero = Object.values(filteredResults).every(
-    (count) => count === 0
-  );
-
-  const topOption = allVotesZero
-    ? "投票なし"
-    : Object.entries(filteredResults).sort((a, b) => b[1] - a[1])[0]?.[0] ??
-      "投票なし";
-
-  const result = {
-    question: poll.question?.text ?? "不明な質問",
-    results: filteredResults,
-    top_option: topOption,
-    voted_at: new Date(),
-  };
-
-  return result;
 };
