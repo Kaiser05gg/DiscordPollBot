@@ -1,7 +1,7 @@
 import { Client, Interaction } from "discord.js";
 import { createPoll } from "./createPoll.js";
 import { runPythonScript as generateGraph } from "../../infrastructure/python/pythonExecutor.js";
-import { updatePollResultUseCase } from "./updatePollResultUseCase.js";
+import { updatePollResultUseCase } from "./savePollResultUseCase.js";
 
 export const setupInteractionHandlers = (client: Client) => {
   client.on("interactionCreate", async (interaction: Interaction) => {
