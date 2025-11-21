@@ -1,6 +1,6 @@
 import { Client, Events } from "discord.js";
 import { updatePollResultUseCase } from "../usecases/updatePollResultUseCase.js";
-import { savePollResultUseCase } from "application/usecases/savePollResultUseCase.js";
+import { savePollResultUseCase } from "../usecases/savePollResultUseCase.js";
 
 export const setupPollListeners = (client: Client) => {
   console.log("🗳️ Firestore対応 Pollリスナーを起動しました");
