@@ -10,8 +10,8 @@ export const pollResultRepository = {
     messageId: string;
     question: string;
   }) {
-    const jst = new Date(Date.now() + 9 * 60 * 60 * 1000);
-    const jstDate = jst.toISOString().split("T")[0];
+    const now = new Date();
+    const jstDate = now.toISOString().split("T")[0];
     const safeQuestion = question.replace(/\s+/g, "_");
     const docId = `${jstDate}_${safeQuestion}`;
 
@@ -21,7 +21,7 @@ export const pollResultRepository = {
         uuid,
         message_id: messageId,
         question,
-        created_at: jst,
+        created_at: now,
       },
       { merge: true }
     );
@@ -40,8 +40,7 @@ export const pollResultRepository = {
     results: Record<string, number>;
     votedAt: Date;
   }) {
-    const jst = new Date(votedAt.getTime() + 9 * 60 * 60 * 1000);
-    const jstDate = jst.toISOString().split("T")[0];
+    const jstDate = votedAt.toISOString().split("T")[0];
     const safeQuestion = question.replace(/\s+/g, "_");
     const docId = `${jstDate}_${safeQuestion}`;
 
@@ -55,7 +54,7 @@ export const pollResultRepository = {
       .set(
         {
           results,
-          voted_at: jst,
+          voted_at: votedAt,
         },
         { merge: true }
       );
@@ -71,8 +70,8 @@ export const pollResultRepository = {
     results: Record<string, number>;
     topOption: string;
   }) {
-    const jst = new Date(Date.now() + 9 * 60 * 60 * 1000);
-    const jstDate = jst.toISOString().split("T")[0];
+    const now = new Date();
+    const jstDate = now.toISOString().split("T")[0];
     const safeQuestion = question.replace(/\s+/g, "_");
     const docId = `${jstDate}_${safeQuestion}`;
 
@@ -88,7 +87,7 @@ export const pollResultRepository = {
         {
           results,
           top_option: topOption,
-          created_at: jst,
+          created_at: now,
         },
         { merge: true }
       );
