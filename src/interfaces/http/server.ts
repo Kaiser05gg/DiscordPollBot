@@ -17,7 +17,7 @@ export function startExpressServer() {
       const db = getFirestore();
       const snapshot = await db
         .collection("poll_results")
-        .orderBy("voted_at", "desc")
+        .orderBy("__name__", "desc") // ← 全件取得
         .get();
 
       const polls = snapshot.docs.map((doc) => ({
