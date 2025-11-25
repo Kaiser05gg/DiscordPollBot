@@ -10,7 +10,7 @@ export const pollResultRepository = {
     messageId: string;
     question: string;
   }) {
-    const now = new Date();
+    const now = new Date(Date.now() + 9 * 60 * 60 * 1000);
     const jstDate = now.toISOString().split("T")[0];
     const safeQuestion = question.replace(/\s+/g, "_");
     const docId = `${jstDate}_${safeQuestion}`;
@@ -54,10 +54,22 @@ export const pollResultRepository = {
       .set(
         {
           results,
-          voted_at: votedAt,
+          voted_at: new Date(votedAt.getTime() + 9 * 60 * 60 * 1000),
         },
         { merge: true }
       );
+    const topOption = Object.values(results).every((v) => v === 0)
+      ? "投票なし"
+      : Object.entries(results).sort((a, b) => b[1] - a[1])[0][0];
+
+    await db.collection("poll_results").doc(docId).set(
+      {
+        question,
+        top_option: topOption,
+        voted_at: votedAt,
+      },
+      { merge: true }
+    );
     console.log(`🟦 /poll 保存完了: ${docId}`);
   },
 
@@ -91,6 +103,14 @@ export const pollResultRepository = {
         },
         { merge: true }
       );
+    await db.collection("poll_results").doc(docId).set(
+      {
+        question,
+        top_option: topOption,
+        voted_at: now,
+      },
+      { merge: true }
+    );
 
     console.log(`🟧 cron 保存完了: ${docId}`);
   },

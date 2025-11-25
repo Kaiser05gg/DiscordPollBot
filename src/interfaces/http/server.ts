@@ -12,7 +12,7 @@ export function startExpressServer() {
     res.send("Express is running!");
   });
 
-  app.get("/api/poll_results", async (req, res) => {
+  app.get("/api/poll_results", async (_req, res) => {
     try {
       const db = getFirestore();
       const snapshot = await db
