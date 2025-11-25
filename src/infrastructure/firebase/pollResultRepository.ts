@@ -10,7 +10,7 @@ export const pollResultRepository = {
     messageId: string;
     question: string;
   }) {
-    const now = new Date(Date.now() + 9 * 60 * 60 * 1000);
+    const now = new Date();
     const jstDate = now.toISOString().split("T")[0];
     const safeQuestion = question.replace(/\s+/g, "_");
     const docId = `${jstDate}_${safeQuestion}`;
