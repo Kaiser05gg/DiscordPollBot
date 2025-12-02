@@ -1,22 +1,36 @@
-export interface Poll {
-  messageId: string;
-  guildId: string | null; //DMではnull
-  channelId: string;
+export interface FirestoreTimestamp {
+  _seconds: number;
+  _nanoseconds: number;
+}
+// 親ドキュメント（poll_results）
+export interface PollDocument {
+  id: string;
+  uuid: string;
   question: string;
+
   createdAt?: Date;
-  closedAt?: Date | null;
-}
-
-// 投票の選択肢
-export interface PollOption {
-  optionId: number;
-  label: string;
-}
-
-// 投票結果（投票者の選択）
-export interface PollVote {
-  messageId: string;
-  userId: string;
-  optionId: number;
+  updatedAt?: Date;
   votedAt?: Date;
+}
+export interface CronResult {
+  timestamp: Date;
+  topOption: string;
+  results: Record<string, number>;
+}
+export interface PollResultDetail {
+  timestamp: Date;
+  topOption: string;
+  results: Record<string, number>;
+}
+export interface PollDetailResponse {
+  id: string;
+  uuid: string;
+  question: string;
+
+  createdAt?: Date;
+  updatedAt?: Date;
+  votedAt?: Date;
+
+  cron: CronResult | null;
+  poll: PollResultDetail | null;
 }
