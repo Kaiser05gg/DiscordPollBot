@@ -14,7 +14,7 @@ export function startExpressServer() {
     res.send("Express is running!");
   });
 
-  app.get("/api/poll_results", async (_req, res) => {
+  app.get("/api/poll_results", async (_req: Request, res: Response) => {
     try {
       const db = getFirestore();
 
@@ -23,17 +23,54 @@ export function startExpressServer() {
         .orderBy("__name__", "desc")
         .get();
 
-      const polls = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+      const results: any[] = [];
 
-      res.json(polls);
+      for (const doc of snapshot.docs) {
+        const data = doc.data();
+
+        const latestSnap = await db
+          .collection("poll_results")
+          .doc(doc.id)
+          .collection("poll")
+          .doc("latest")
+          .get();
+
+        const latest = latestSnap.exists ? latestSnap.data() : null;
+
+        // 🔥 top_option を補完
+        let topOption = "（まだ集計なし）";
+
+        if (latest?.results) {
+          const results = latest.results as Record<string, number>;
+
+          const entries = Object.entries(results);
+          const sorted = entries.sort(([, a], [, b]) => b - a);
+          const [option, count] = sorted[0];
+
+          if (count > 0) {
+            topOption = option;
+          } else {
+            topOption = "無投票";
+          }
+        }
+
+        results.push({
+          id: doc.id,
+          uuid: data.uuid,
+          question: data.question ?? null,
+          created_at: data.created_at ?? null,
+          top_option: topOption,
+          results: latest?.results ?? null,
+          voted_at: latest?.voted_at ?? null,
+        });
+      }
+
+      res.json(results);
     } catch (error) {
       console.error("Firestore取得エラー:", error);
-      res
-        .status(500)
-        .json({ error: "Firestoreからデータを取得できませんでした。" });
+      res.status(500).json({
+        error: "Firestoreからデータを取得できませんでした。",
+      });
     }
   });
 
