@@ -6,7 +6,6 @@ export interface DiscordPoll {
   createdAt?: Date;
   closedAt?: Date | null;
 }
-
 export interface DiscordPollOption {
   optionId: number;
   label: string;
